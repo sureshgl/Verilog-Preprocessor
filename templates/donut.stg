@@ -1,0 +1,22 @@
+donut(modulename,inputports,outputports,inputportsnoclk)::=<<
+module <modulename> (
+	<inputports:{ip|<ip.name>};separator=",\n">,
+	<outputports:{op|<op.name>};separator=",\n">
+);
+
+  <inputports:{ip|<ip.declaration>};separator=";\n">;
+  <outputports:{op|<op.declaration>};separator=";\n">;
+
+  <inputportsnoclk:{ip|<ip.regDeclaration>};separator=";\n">;
+  reg reg_ready;
+  
+  <outputports:{op|assign <op.name> = <if(op.ranged)> {<op.range.size>{reg_ready\}\}<else>reg_ready <endif> };separator=";\n">;
+  
+  always @(posedge clk) begin
+    <inputportsnoclk:{ip|reg_<ip.name> \<= <ip.name>};separator=";\n">;
+    
+    reg_ready \<= { <inputportsnoclk:{ip||reg_<ip.name>};separator=" && "> }; 
+  end 
+  
+endmodule
+>>

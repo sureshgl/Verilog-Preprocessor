@@ -1,0 +1,462 @@
+testskel(classname,ruletext,rule,testDataFile)::=<<
+package com.proteus.parser.verilog;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import com.proteus.preprocess.verilog.gen.VerilogBaseVisitor;
+import com.proteus.parser.verilog.common.ConfigUtils;
+import com.proteus.preprocess.verilog.components.VerilogNode;
+ 
+/* 
+RULE SPEC: As it appears in the grammar file
+<ruletext>
+*/ 
+
+public class <classname>Test extends AbstractTestCase {
+
+	public <classname>Test() throws FileNotFoundException, IOException,
+			URISyntaxException {
+		super();
+	}
+	
+	@Override
+	public ParserRuleContext getRuleContext() {
+		return getParser().<rule>();
+	}
+	
+	@Override
+	public ParserRuleContext getPrimeRuleContext() {
+		return getPrimeParser().<rule>();
+	}
+
+	@Override
+	public VerilogBaseVisitor\<VerilogNode> getVisitor() {
+		return new <classname>Visitor();
+	}
+
+	@Override
+	public String getRuleRef() {
+		return "<rule>";
+	}
+
+	@Override
+	public File getTestDataFile() {
+		return null;
+	}
+	
+	@Override
+	public File getCoverageTestDataFile() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./coverage_data/<testDataFile>");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getUserInputFilesFolder() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./userInputFiles/<rule>");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getVerilogFile1() {
+		return new File(ConfigUtils.getVerilogGrammarfile());
+	}
+
+	@Override
+	public File getVerilogFile2() {
+		return new File(ConfigUtils.getVerilogPrimeGrammarFile());
+	}
+	
+}
+
+>>
+testaltnodeskel(classname,rule)::=<<
+package com.proteus.parser.verilog;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URI;
+import java.net.URL;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import com.proteus.preprocess.verilog.gen.VerilogBaseVisitor;
+import com.proteus.parser.verilog.common.ConfigUtils;
+import com.proteus.preprocess.verilog.components.VerilogNode;
+ 
+
+
+public class <classname>Test extends AbstractTestCase {
+
+	public <classname>Test() throws FileNotFoundException, IOException,
+			URISyntaxException {
+		super();
+	}
+	
+	@Override
+	public ParserRuleContext getRuleContext() {
+		return getParser().<rule>();
+	}
+	
+	@Override
+	public ParserRuleContext getPrimeRuleContext() {
+		return getPrimeParser().<rule>();
+	}
+
+	@Override
+	public VerilogBaseVisitor\<VerilogNode> getVisitor() {
+		return new <classname>Visitor();
+	}
+
+	@Override
+	public String getRuleRef() {
+		return "<rule>";
+	}
+
+	@Override
+	public File getTestDataFile() {
+		return null;
+	}
+	
+	@Override
+	public  File getCoverageTestDataFile() {
+	
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./coverage_data/<classname>TestData");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+		
+	}
+	
+	@Override
+	public File getUserInputFilesFolder() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./userInputFiles/<rule>");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getVerilogFile1() {
+		return new File(ConfigUtils.getVerilogGrammarfile());
+	}
+
+	@Override
+	public File getVerilogFile2() {
+		return new File(ConfigUtils.getVerilogPrimeGrammarFile());
+	}
+}
+
+>>
+testsingleskel(classname,ruletext,rule,ruleclass,testclass)::=<<
+package com.proteus.parser.verilog;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import com.proteus.preprocess.verilog.gen.VerilogBaseVisitor;
+import com.proteus.parser.verilog.common.ConfigUtils;
+import com.proteus.preprocess.verilog.components.VerilogNode;
+ 
+/* 
+RULE SPEC: As it appears in the grammar file
+<ruletext>
+*/ 
+
+public class <classname>Test extends AbstractTestCase {
+
+	public <classname>Test() throws FileNotFoundException, IOException,
+			URISyntaxException {
+		super();
+	}
+	
+	@Override
+	public ParserRuleContext getRuleContext() {
+		return getParser().<rule>();
+	}
+	
+	@Override
+	public ParserRuleContext getPrimeRuleContext() {
+		return getPrimeParser().<rule>();
+	}
+
+	@Override
+	public VerilogBaseVisitor\<VerilogNode> getVisitor() {
+		return new <classname>Visitor();
+	}
+
+	@Override
+	public String getRuleRef() {
+		return "<rule>";
+	}
+
+	@Override
+	public File getTestDataFile() {
+		return null;
+	}
+	
+	@Override
+	public  File getCoverageTestDataFile() {
+	
+		File file = null;
+		<ruleclass> <testclass> = null;
+		try {
+			<testclass> = new <ruleclass>();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		 file = <testclass>.getCoverageTestDataFile();
+		 return file;
+		
+	}
+	
+	@Override
+	public File getUserInputFilesFolder() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./userInputFiles/<rule>");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getVerilogFile1() {
+		return new File(ConfigUtils.getVerilogGrammarfile());
+	}
+
+	@Override
+	public File getVerilogFile2() {
+		return new File(ConfigUtils.getVerilogPrimeGrammarFile());
+	}
+	
+}
+
+>>
+testaltskel(classname,ruletext,rule,parent_rule,parent_classname)::=<<
+package com.proteus.parser.verilog;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import com.proteus.preprocess.verilog.gen.VerilogBaseVisitor;
+import com.proteus.parser.verilog.common.ConfigUtils;
+import com.proteus.preprocess.verilog.components.VerilogNode;
+ 
+/* 
+RULE SPEC: As it appears in the grammar file
+<ruletext>
+*/ 
+
+public class <classname>Test extends AbstractTestCase {
+
+	public <classname>Test() throws FileNotFoundException, IOException,
+			URISyntaxException {
+		super();
+	}
+	
+	@Override
+	public ParserRuleContext getRuleContext() {
+		return getParser().<parent_rule>();
+	}
+
+	@Override
+	public ParserRuleContext getPrimeRuleContext() {
+		return getPrimeParser().<parent_rule>();
+	}
+
+	@Override
+	public VerilogBaseVisitor\<VerilogNode> getVisitor() {
+		return new <parent_classname>Visitor();
+	}
+
+	@Override
+	public String getRuleRef() {
+		return "<rule>";
+	}
+
+	@Override
+	public File getTestDataFile() {
+		return null;
+	}
+	
+	@Override
+	public File getCoverageTestDataFile() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./coverage_data/<classname>TestData");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getUserInputFilesFolder() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./userInputFiles/<rule>");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getVerilogFile1() {
+		return new File(ConfigUtils.getVerilogGrammarfile());
+	}
+
+	@Override
+	public File getVerilogFile2() {
+		return new File(ConfigUtils.getVerilogPrimeGrammarFile());
+	}
+	
+}
+>>
+TestParserTermSkel(classname,ruletext,rule)::=<<
+package com.proteus.parser.verilog;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import com.proteus.preprocess.verilog.gen.VerilogBaseVisitor;
+import com.proteus.parser.verilog.common.ConfigUtils;
+import com.proteus.preprocess.verilog.components.VerilogNode;
+ 
+/* 
+RULE SPEC: As it appears in the grammar file
+<ruletext>
+*/ 
+
+public class <classname>Test extends AbstractTestCase {
+
+	public <classname>Test() throws FileNotFoundException, IOException,
+			URISyntaxException {
+		super();
+	}
+	
+	@Override
+	public ParserRuleContext getRuleContext() {
+		return getParser().<rule>();
+	}
+
+	@Override
+	public ParserRuleContext getPrimeRuleContext() {
+		return getPrimeParser().<rule>();
+	}
+
+	@Override
+	public VerilogBaseVisitor\<VerilogNode> getVisitor() {
+		return new <classname>Visitor();
+	}
+
+	@Override
+	public String getRuleRef() {
+		return "<rule>";
+	}
+
+	@Override
+	public File getTestDataFile() {
+		URI uri = null;
+		URL url = <classname>Test.class.getResource("./<classname>TestData");
+		try{
+			uri = url.toURI();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return new File(uri);
+	}
+	
+	@Override
+	public File getCoverageTestDataFile() {
+		return null;
+	}
+	
+	@Override
+	public File getVerilogFile1() {
+		return new File(ConfigUtils.getVerilogGrammarfile());
+	}
+
+	@Override
+	public File getVerilogFile2() {
+		return new File(ConfigUtils.getVerilogPrimeGrammarFile());
+	}
+	
+	@Override
+	public File getUserInputFilesFolder() {
+		return null;
+	}
+}
+
+>>

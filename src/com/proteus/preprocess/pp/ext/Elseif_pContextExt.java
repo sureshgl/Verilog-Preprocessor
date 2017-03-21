@@ -1,0 +1,38 @@
+package com.proteus.preprocess.pp.ext;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+import lombok.Getter;
+import com.proteus.preprocess.pp.PopulateExtendedContextVisitor;
+import com.proteus.preprocess.pp.gen.PPParser.Elseif_pContext;
+
+public class Elseif_pContextExt extends AbstractBaseExt{
+
+	@Getter private Elseif_pContext ctx;
+
+	public Elseif_pContextExt(Elseif_pContext ctx) {
+		this.ctx = ctx;
+	}
+
+	@Override
+	public ParserRuleContext getContext(){
+		return ctx;
+	}
+
+	@Override
+	public ParserRuleContext getContext(String str){
+		return new PopulateExtendedContextVisitor().visit(getPrimeParser(str).elseif_p());
+	}
+
+	@Override
+	public void setContext(ParserRuleContext ctx){
+		if(ctx != null){
+			if(ctx instanceof Elseif_pContext){
+				this.ctx = (Elseif_pContext) ctx;
+			} else {
+				throw new ClassCastException(ctx.getClass().getSimpleName() + " cannot be cased to "+Elseif_pContext.class.getName());
+			}
+		} else {
+			this.ctx= null;
+		}
+	}
+}

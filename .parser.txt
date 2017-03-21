@@ -1,0 +1,3959 @@
+source_text
+locals [ Source_textContextExt extendedContext ]
+	: timeunits_declaration? description* EOF;
+
+description
+locals [ DescriptionContextExt extendedContext ]
+	: module_declaration
+	| udp_declaration
+	| interface_declaration
+	| program_declaration
+	| checker_declaration
+	| package_declaration
+	| attribute_instance* ( package_item | bind_directive );
+
+module_declaration
+locals [ Module_declarationContextExt extendedContext ]
+	: module_nonansi_header timeunits_declaration? module_item*  ENDMODULESTR  ( COLON module_identifier )?
+	| module_ansi_header timeunits_declaration? non_port_module_item*  ENDMODULESTR  ( COLON module_identifier )?
+	|  EXTERNSTR  ( module_nonansi_header | module_ansi_header );
+
+module_nonansi_header
+locals [ Module_nonansi_headerContextExt extendedContext ]
+	: attribute_instance* module_keyword lifetime? module_identifier ( package_import_declaration )* parameter_port_list? list_of_ports SEMI;
+
+module_ansi_header
+locals [ Module_ansi_headerContextExt extendedContext ]
+	: attribute_instance* module_keyword lifetime? module_identifier ( package_import_declaration )* parameter_port_list? list_of_port_declarations? SEMI;
+
+module_keyword
+locals [ Module_keywordContextExt extendedContext ]
+	:  MODULESTR 
+	|  MACROMODULESTR ;
+
+interface_declaration
+locals [ Interface_declarationContextExt extendedContext ]
+	: interface_nonansi_header timeunits_declaration? interface_item*  ENDINTERFACESTR  ( COLON interface_identifier )?
+	| interface_ansi_header timeunits_declaration? non_port_interface_item*  ENDINTERFACESTR  ( COLON interface_identifier )?
+	| attribute_instance*  INTERFACESTR  interface_identifier LPAREN  DOTSTAR  RPAREN SEMI timeunits_declaration? interface_item*  ENDINTERFACESTR  ( COLON interface_identifier )?
+	|  EXTERNSTR  ( interface_nonansi_header | interface_ansi_header );
+
+interface_nonansi_header
+locals [ Interface_nonansi_headerContextExt extendedContext ]
+	: attribute_instance*  INTERFACESTR  lifetime? interface_identifier ( package_import_declaration )* parameter_port_list? list_of_ports SEMI;
+
+interface_ansi_header
+locals [ Interface_ansi_headerContextExt extendedContext ]
+	: attribute_instance*  INTERFACESTR  lifetime? interface_identifier package_import_declaration* parameter_port_list? list_of_port_declarations?;
+
+program_declaration
+locals [ Program_declarationContextExt extendedContext ]
+	: program_nonansi_header timeunits_declaration? program_item*  ENDPROGRAMSTR  ( COLON program_identifier )?
+	| program_ansi_header timeunits_declaration? ( non_port_program_item )*  ENDPROGRAMSTR  ( COLON program_identifier )?
+	| attribute_instance*  PROGRAMSTR  program_identifier LPAREN  DOTSTAR  RPAREN SEMI timeunits_declaration? program_item*  ENDPROGRAMSTR  ( COLON program_identifier )?
+	|  EXTERNSTR  ( program_nonansi_header | program_ansi_header );
+
+program_nonansi_header
+locals [ Program_nonansi_headerContextExt extendedContext ]
+	: attribute_instance*  PROGRAMSTR  lifetime? program_identifier ( package_import_declaration )* parameter_port_list? list_of_ports SEMI;
+
+program_ansi_header
+locals [ Program_ansi_headerContextExt extendedContext ]
+	: attribute_instance*  PROGRAMSTR  lifetime? program_identifier ( package_import_declaration )* parameter_port_list? list_of_port_declarations? SEMI;
+
+checker_declaration
+locals [ Checker_declarationContextExt extendedContext ]
+	:  CHECKERSTR  checker_identifier ( LPAREN checker_port_list? RPAREN )? SEMI checker_or_generate_item*  ENDCHECKERSTR  ( COLON checker_identifier )?;
+
+class_declaration
+locals [ Class_declarationContextExt extendedContext ]
+	: (  VIRTUALSTR  )?  CLASSSTR  lifetime? class_identifier parameter_port_list? (  EXTENDSSTR  class_type ( LPAREN list_of_arguments RPAREN )? )? SEMI class_item*  ENDCLASSSTR  ( COLON class_identifier )?;
+
+package_declaration
+locals [ Package_declarationContextExt extendedContext ]
+	: attribute_instance*  PACKAGESTR  lifetime? package_identifier SEMI timeunits_declaration? ( package_declaration_part1 )*  ENDPACKAGESTR  ( COLON package_identifier )?;
+
+package_declaration_part1
+locals [ Package_declaration_part1ContextExt extendedContext ]
+	: attribute_instance* package_item;
+
+timeunits_declaration
+locals [ Timeunits_declarationContextExt extendedContext ]
+	: TIMEUNIT time_literal (  DIV  time_literal )? SEMI;
+
+parameter_port_list
+locals [ Parameter_port_listContextExt extendedContext ]
+	: HASH LPAREN ( ( list_of_param_assignments ( COMMA parameter_port_declaration )* ) | list_of_parameter_port_declaration )? RPAREN;
+
+list_of_parameter_port_declaration
+locals [ List_of_parameter_port_declarationContextExt extendedContext ]
+	: parameter_port_declaration ( COMMA parameter_port_declaration )*;
+
+parameter_port_declaration
+locals [ Parameter_port_declarationContextExt extendedContext ]
+	: parameter_declaration
+	| local_parameter_declaration
+	| data_type list_of_param_assignments
+	|  TYPESTR  list_of_type_assignments;
+
+list_of_ports
+locals [ List_of_portsContextExt extendedContext ]
+	: LPAREN port ( COMMA port )* RPAREN;
+
+list_of_port_declarations
+locals [ List_of_port_declarationsContextExt extendedContext ]
+	: LPAREN ( list_of_port_declarations_part1 ( COMMA list_of_port_declarations_part1 )* )? RPAREN;
+
+list_of_port_declarations_part1
+locals [ List_of_port_declarations_part1ContextExt extendedContext ]
+	: attribute_instance* ansi_port_declaration;
+
+port_declaration
+locals [ Port_declarationContextExt extendedContext ]
+	: attribute_instance* ( inout_declaration | input_declaration | output_declaration | ref_declaration | interface_port_declaration );
+
+port
+locals [ PortContextExt extendedContext ]
+	: ( port_expression )?
+	| DOT port_identifier LPAREN port_expression? RPAREN;
+
+port_expression
+locals [ Port_expressionContextExt extendedContext ]
+	: port_reference
+	| LCURL port_reference ( COMMA port_reference )* RCURL;
+
+port_reference
+locals [ Port_referenceContextExt extendedContext ]
+	: port_identifier constant_select;
+
+port_direction
+locals [ Port_directionContextExt extendedContext ]
+	:  INPUTSTR 
+	|  OUTPUTSTR 
+	|  INOUTSTR 
+	|  REFSTR ;
+
+net_port_header
+locals [ Net_port_headerContextExt extendedContext ]
+	: ( port_direction )? net_port_type;
+
+variable_port_header
+locals [ Variable_port_headerContextExt extendedContext ]
+	: ( port_direction )? variable_port_type;
+
+interface_port_header
+locals [ Interface_port_headerContextExt extendedContext ]
+	: interface_identifier ( DOT modport_identifier )?
+	|  INTERFACESTR  ( DOT modport_identifier )?;
+
+ansi_port_declaration
+locals [ Ansi_port_declarationContextExt extendedContext ]
+	: ( net_port_header | interface_port_header )? port_identifier ( unpacked_dimension )* ( ASSIGN constant_expression )?
+	| variable_port_header? port_identifier variable_dimension* ( ASSIGN constant_expression )?
+	| ( port_direction )? DOT port_identifier LPAREN expression? RPAREN;
+
+elaboration_system_task
+locals [ Elaboration_system_taskContextExt extendedContext ]
+	:  DOLLARFATALSTR  ( LPAREN finish_number ( COMMA list_of_arguments )? RPAREN )? SEMI
+	|  DOLLARERRORSTR  ( LPAREN list_of_arguments? RPAREN )? SEMI
+	|  DOLLARWARNINGSTR  ( LPAREN list_of_arguments? RPAREN )? SEMI
+	|  DOLLARINFOSTR  ( LPAREN list_of_arguments? RPAREN )? SEMI;
+
+finish_number
+locals [ Finish_numberContextExt extendedContext ]
+	: number;
+
+module_common_item
+locals [ Module_common_itemContextExt extendedContext ]
+	: module_or_generate_item_declaration
+	| interface_instantiation
+	| program_instantiation
+	| assertion_item
+	| bind_directive
+	| continuous_assign
+	| net_alias
+	| initial_construct
+	| final_construct
+	| always_construct
+	| loop_generate_construct
+	| conditional_generate_construct
+	| elaboration_system_task;
+
+module_item
+locals [ Module_itemContextExt extendedContext ]
+	: port_declaration SEMI
+	| non_port_module_item;
+
+module_or_generate_item
+locals [ Module_or_generate_itemContextExt extendedContext ]
+	: attribute_instance* parameter_override
+	| attribute_instance* gate_instantiation
+	| attribute_instance* udp_instantiation
+	| attribute_instance* module_instantiation
+	| attribute_instance* module_common_item;
+
+non_port_module_item
+locals [ Non_port_module_itemContextExt extendedContext ]
+	: generate_region
+	| module_or_generate_item
+	| specify_block
+	| attribute_instance* specparam_declaration
+	| program_declaration
+	| module_declaration
+	| interface_declaration
+	| timeunits_declaration
+	| checker_declaration;
+
+parameter_override
+locals [ Parameter_overrideContextExt extendedContext ]
+	:  DEFPARAMSTR  list_of_defparam_assignments SEMI;
+
+bind_directive
+locals [ Bind_directiveContextExt extendedContext ]
+	:  BINDSTR  bind_target_scope ( COLON bind_target_instance_list )? bind_instantiation SEMI
+	|  BINDSTR  bind_target_instance bind_instantiation SEMI;
+
+bind_target_scope
+locals [ Bind_target_scopeContextExt extendedContext ]
+	: module_identifier
+	| interface_identifier;
+
+bind_target_instance
+locals [ Bind_target_instanceContextExt extendedContext ]
+	: hierarchical_identifier constant_bit_select;
+
+bind_target_instance_list
+locals [ Bind_target_instance_listContextExt extendedContext ]
+	: bind_target_instance ( COMMA bind_target_instance )*;
+
+bind_instantiation
+locals [ Bind_instantiationContextExt extendedContext ]
+	: program_instantiation
+	| module_instantiation
+	| interface_instantiation
+	| checker_instantiation;
+
+config_declaration
+locals [ Config_declarationContextExt extendedContext ]
+	:  CONFIGSTR  config_identifier SEMI ( local_parameter_declaration )* design_statement ( config_rule_statement )*  ENDCONFIGSTR  ( COLON config_identifier )?;
+
+design_statement
+locals [ Design_statementContextExt extendedContext ]
+	:  DESIGNSTR  design_statement_part1* SEMI;
+
+design_statement_part1
+locals [ Design_statement_part1ContextExt extendedContext ]
+	: ( library_identifier DOT )? cell_identifier;
+
+config_rule_statement
+locals [ Config_rule_statementContextExt extendedContext ]
+	: default_clause liblist_clause SEMI
+	| inst_clause liblist_clause SEMI
+	| inst_clause use_clause SEMI
+	| cell_clause liblist_clause SEMI
+	| cell_clause use_clause SEMI;
+
+default_clause
+locals [ Default_clauseContextExt extendedContext ]
+	:  DEFAULTSTR ;
+
+inst_clause
+locals [ Inst_clauseContextExt extendedContext ]
+	:  INSTANCESTR  inst_name;
+
+inst_name
+locals [ Inst_nameContextExt extendedContext ]
+	: topmodule_identifier ( DOT instance_identifier )*;
+
+cell_clause
+locals [ Cell_clauseContextExt extendedContext ]
+	:  CELLSTR  ( library_identifier DOT )? cell_identifier;
+
+liblist_clause
+locals [ Liblist_clauseContextExt extendedContext ]
+	:  LIBLISTSTR  ( library_identifier )?;
+
+use_clause
+locals [ Use_clauseContextExt extendedContext ]
+	:  USESTR  ( library_identifier DOT )? cell_identifier ( COLON  CONFIGSTR  )?
+	|  USESTR  named_parameter_assignment ( COMMA named_parameter_assignment )* ( COLON  CONFIGSTR  )?
+	|  USESTR  ( library_identifier DOT )? cell_identifier named_parameter_assignment ( COMMA named_parameter_assignment )* ( COLON  CONFIGSTR  )?;
+
+module_or_generate_item_declaration
+locals [ Module_or_generate_item_declarationContextExt extendedContext ]
+	: package_or_generate_item_declaration
+	| genvar_declaration
+	| clocking_declaration
+	|  DEFAULTSTR   CLOCKINGSTR  clocking_identifier SEMI
+	|  DEFAULTSTR   DISABLESTR   IFFSTR  expression_or_dist SEMI;
+
+interface_or_generate_item
+locals [ Interface_or_generate_itemContextExt extendedContext ]
+	: attribute_instance* module_common_item
+	| attribute_instance* modport_declaration
+	| attribute_instance* extern_tf_declaration;
+
+extern_tf_declaration
+locals [ Extern_tf_declarationContextExt extendedContext ]
+	:  EXTERNSTR  method_prototype SEMI
+	|  EXTERNSTR   FORKJOINSTR  task_prototype SEMI;
+
+interface_item
+locals [ Interface_itemContextExt extendedContext ]
+	: port_declaration SEMI
+	| non_port_interface_item;
+
+non_port_interface_item
+locals [ Non_port_interface_itemContextExt extendedContext ]
+	: generate_region
+	| interface_or_generate_item
+	| program_declaration
+	| interface_declaration
+	| checker_declaration
+	| timeunits_declaration;
+
+program_item
+locals [ Program_itemContextExt extendedContext ]
+	: port_declaration SEMI
+	| non_port_program_item;
+
+non_port_program_item
+locals [ Non_port_program_itemContextExt extendedContext ]
+	: attribute_instance* continuous_assign
+	| attribute_instance* module_or_generate_item_declaration
+	| attribute_instance* initial_construct
+	| attribute_instance* final_construct
+	| attribute_instance* concurrent_assertion_item
+	| attribute_instance* timeunits_declaration
+	| program_generate_item;
+
+program_generate_item
+locals [ Program_generate_itemContextExt extendedContext ]
+	: loop_generate_construct
+	| conditional_generate_construct
+	| generate_region
+	| elaboration_system_task;
+
+checker_port_list
+locals [ Checker_port_listContextExt extendedContext ]
+	: checker_port_item ( COMMA checker_port_item )*;
+
+checker_port_item
+locals [ Checker_port_itemContextExt extendedContext ]
+	: attribute_instance* property_formal_type port_identifier variable_dimension* ( ASSIGN property_actual_arg )?;
+
+checker_or_generate_item
+locals [ Checker_or_generate_itemContextExt extendedContext ]
+	: checker_or_generate_item_declaration
+	| initial_construct
+	| checker_always_construct
+	| final_construct
+	| assertion_item
+	| checker_generate_item;
+
+checker_or_generate_item_declaration
+locals [ Checker_or_generate_item_declarationContextExt extendedContext ]
+	: data_declaration
+	| function_declaration
+	| assertion_item_declaration
+	| covergroup_declaration
+	| overload_declaration
+	| genvar_declaration
+	| clocking_declaration
+	|  DEFAULTSTR   CLOCKINGSTR  clocking_identifier SEMI
+	|  DEFAULTSTR   DISABLESTR   IFFSTR  expression_or_dist SEMI
+	| SEMI;
+
+checker_generate_item
+locals [ Checker_generate_itemContextExt extendedContext ]
+	: loop_generate_construct
+	| conditional_generate_construct
+	| generate_region
+	| elaboration_system_task;
+
+checker_always_construct
+locals [ Checker_always_constructContextExt extendedContext ]
+	:  ALWAYSSTR  statement;
+
+class_item
+locals [ Class_itemContextExt extendedContext ]
+	: attribute_instance* class_property
+	| attribute_instance* class_method
+	| attribute_instance* class_constraint
+	| attribute_instance* class_declaration
+	| attribute_instance* covergroup_declaration
+	| local_parameter_declaration SEMI
+	| parameter_declaration SEMI
+	| SEMI;
+
+class_property
+locals [ Class_propertyContextExt extendedContext ]
+	: ( property_qualifier )* data_declaration
+	|  CONSTSTR  class_item_qualifier* data_type const_identifier ( ASSIGN constant_expression )? SEMI;
+
+class_method
+locals [ Class_methodContextExt extendedContext ]
+	: method_qualifier* task_declaration
+	| method_qualifier* function_declaration
+	|  EXTERNSTR  method_qualifier* method_prototype SEMI
+	| method_qualifier* class_constructor_declaration
+	|  EXTERNSTR  method_qualifier* class_constructor_prototype;
+
+class_constructor_prototype
+locals [ Class_constructor_prototypeContextExt extendedContext ]
+	:  FUNCTIONSTR   NEWSTR  LPAREN tf_port_list? RPAREN SEMI;
+
+class_constraint
+locals [ Class_constraintContextExt extendedContext ]
+	: constraint_prototype
+	| constraint_declaration;
+
+class_item_qualifier
+locals [ Class_item_qualifierContextExt extendedContext ]
+	:  STATICSTR 
+	|  PROTECTEDSTR 
+	|  LOCALSTR ;
+
+property_qualifier
+locals [ Property_qualifierContextExt extendedContext ]
+	: random_qualifier
+	| class_item_qualifier;
+
+random_qualifier
+locals [ Random_qualifierContextExt extendedContext ]
+	:  RANDSTR 
+	|  RANDCSTR ;
+
+method_qualifier
+locals [ Method_qualifierContextExt extendedContext ]
+	:  PURESTR ?  VIRTUALSTR 
+	| class_item_qualifier;
+
+method_prototype
+locals [ Method_prototypeContextExt extendedContext ]
+	: task_prototype
+	| function_prototype;
+
+class_constructor_declaration
+locals [ Class_constructor_declarationContextExt extendedContext ]
+	:  FUNCTIONSTR  class_scope?  NEWSTR  ( LPAREN tf_port_list? RPAREN )? SEMI block_item_declaration? (  SUPERSTR  DOT  NEWSTR  ( LPAREN list_of_arguments RPAREN )? SEMI )? function_statement_or_null*  ENDFUNCTIONSTR  ( COLON  NEWSTR  )?;
+
+constraint_declaration
+locals [ Constraint_declarationContextExt extendedContext ]
+	: (  STATICSTR  )?  CONSTRAINTSTR  constraint_identifier constraint_block;
+
+constraint_block
+locals [ Constraint_blockContextExt extendedContext ]
+	: LCURL constraint_block_item* RCURL;
+
+constraint_block_item
+locals [ Constraint_block_itemContextExt extendedContext ]
+	:  SOLVESTR  solve_before_list  BEFORESTR  solve_before_list SEMI
+	| constraint_expression;
+
+solve_before_list
+locals [ Solve_before_listContextExt extendedContext ]
+	: solve_before_primary ( COMMA solve_before_primary )*;
+
+solve_before_primary
+locals [ Solve_before_primaryContextExt extendedContext ]
+	: ( implicit_class_handle DOT | class_scope )? hierarchical_identifier select;
+
+constraint_expression
+locals [ Constraint_expressionContextExt extendedContext ]
+	: expression_or_dist SEMI
+	| expression  DERIVE  constraint_set
+	|  IFSTR  LPAREN expression RPAREN constraint_set (  ELSESTR  constraint_set )?
+	|  FOREACHSTR  LPAREN ps_or_hierarchical_array_identifier LBRACK loop_variables RBRACK RPAREN constraint_set;
+
+constraint_set
+locals [ Constraint_setContextExt extendedContext ]
+	: constraint_expression
+	| LCURL ( constraint_expression )* RCURL;
+
+dist_list
+locals [ Dist_listContextExt extendedContext ]
+	: dist_item ( COMMA dist_item )*;
+
+dist_item
+locals [ Dist_itemContextExt extendedContext ]
+	: value_range dist_weight?;
+
+dist_weight
+locals [ Dist_weightContextExt extendedContext ]
+	:  COLONEQUALS  expression
+	|  COLONSLASH  expression;
+
+constraint_prototype
+locals [ Constraint_prototypeContextExt extendedContext ]
+	:  STATICSTR ?  CONSTRAINTSTR  constraint_identifier SEMI;
+
+extern_constraint_declaration
+locals [ Extern_constraint_declarationContextExt extendedContext ]
+	:  STATICSTR ?  CONSTRAINTSTR  class_scope constraint_identifier constraint_block;
+
+identifier_list
+locals [ Identifier_listContextExt extendedContext ]
+	: identifier ( COMMA identifier )*;
+
+package_item
+locals [ Package_itemContextExt extendedContext ]
+	: package_or_generate_item_declaration
+	| anonymous_program
+	| package_export_declaration
+	| timeunits_declaration;
+
+package_or_generate_item_declaration
+locals [ Package_or_generate_item_declarationContextExt extendedContext ]
+	: net_declaration
+	| data_declaration
+	| task_declaration
+	| function_declaration
+	| dpi_import_export
+	| extern_constraint_declaration
+	| class_declaration
+	| class_constructor_declaration
+	| local_parameter_declaration SEMI
+	| parameter_declaration SEMI
+	| covergroup_declaration
+	| overload_declaration
+	| assertion_item_declaration
+	| SEMI;
+
+anonymous_program
+locals [ Anonymous_programContextExt extendedContext ]
+	:  PROGRAMSTR  SEMI anonymous_program_item*  ENDPROGRAMSTR ;
+
+anonymous_program_item
+locals [ Anonymous_program_itemContextExt extendedContext ]
+	: task_declaration
+	| function_declaration
+	| class_declaration
+	| covergroup_declaration
+	| class_constructor_declaration
+	| SEMI;
+
+local_parameter_declaration
+locals [ Local_parameter_declarationContextExt extendedContext ]
+	:  LOCALPARAMSTR  data_type_or_implicit list_of_param_assignments
+	|  LOCALPARAMSTR   TYPESTR  list_of_type_assignments;
+
+parameter_declaration
+locals [ Parameter_declarationContextExt extendedContext ]
+	:  PARAMETERSTR  data_type_or_implicit list_of_param_assignments
+	|  PARAMETERSTR   TYPESTR  list_of_type_assignments;
+
+specparam_declaration
+locals [ Specparam_declarationContextExt extendedContext ]
+	:  SPECPARAMSTR  packed_dimension? list_of_specparam_assignments SEMI;
+
+inout_declaration
+locals [ Inout_declarationContextExt extendedContext ]
+	:  INOUTSTR  net_port_type list_of_port_identifiers;
+
+input_declaration
+locals [ Input_declarationContextExt extendedContext ]
+	:  INPUTSTR  net_port_type list_of_port_identifiers
+	|  INPUTSTR  variable_port_type list_of_variable_identifiers;
+
+output_declaration
+locals [ Output_declarationContextExt extendedContext ]
+	:  OUTPUTSTR  net_port_type list_of_port_identifiers
+	|  OUTPUTSTR  variable_port_type list_of_variable_port_identifiers;
+
+interface_port_declaration
+locals [ Interface_port_declarationContextExt extendedContext ]
+	: interface_identifier list_of_interface_identifiers
+	| interface_identifier DOT modport_identifier list_of_interface_identifiers;
+
+ref_declaration
+locals [ Ref_declarationContextExt extendedContext ]
+	:  REFSTR  variable_port_type list_of_port_identifiers;
+
+data_declaration
+locals [ Data_declarationContextExt extendedContext ]
+	: (  CONSTSTR  )? (  VARSTR  )? ( lifetime )? data_type_or_implicit list_of_variable_decl_assignments SEMI
+	| type_declaration
+	| package_import_declaration
+	| virtual_interface_declaration;
+
+package_import_declaration
+locals [ Package_import_declarationContextExt extendedContext ]
+	:  IMPORTSTR  package_import_item ( COMMA package_import_item )* SEMI;
+
+package_import_item
+locals [ Package_import_itemContextExt extendedContext ]
+	: package_identifier  COLONCOLON  identifier
+	| package_identifier  COLONCOLON   STAR ;
+
+package_export_declaration
+locals [ Package_export_declarationContextExt extendedContext ]
+	:  EXPORT   STARTCOLONCOLONSTAR  SEMI
+	|  EXPORT  package_import_item ( COMMA package_import_item )* SEMI;
+
+genvar_declaration
+locals [ Genvar_declarationContextExt extendedContext ]
+	:  GENVARSTR  list_of_genvar_identifiers SEMI;
+
+net_declaration
+locals [ Net_declarationContextExt extendedContext ]
+	: net_type ( drive_strength | charge_strength )? (  VECTOREDSTR  |  SCALAREDSTR  )? data_type_or_implicit delay3? list_of_net_decl_assignments SEMI;
+
+type_declaration
+locals [ Type_declarationContextExt extendedContext ]
+	:  TYPEDEFSTR  data_type type_identifier ( variable_dimension )* SEMI
+	|  TYPEDEFSTR  interface_instance_identifier constant_bit_select DOT type_identifier type_identifier SEMI
+	|  TYPEDEFSTR  (  ENUMSTR  |  STRUCTSTR  |  UNIONSTR  |  CLASSSTR  )? type_identifier SEMI;
+
+lifetime
+locals [ LifetimeContextExt extendedContext ]
+	:  STATICSTR 
+	|  AUTOMATICSTR ;
+
+casting_type
+locals [ Casting_typeContextExt extendedContext ]
+	: simple_type
+	| signing
+	|  STRINGSTR 
+	|  CONSTSTR ;
+
+data_type
+locals [ Data_typeContextExt extendedContext ]
+	: integer_vector_type signing? ( packed_dimension )*
+	| integer_atom_type signing?
+	| non_integer_type
+	| struct_union (  PACKEDSTR  ( signing )? )? LCURL struct_union_member ( struct_union_member )* RCURL packed_dimension*
+	|  ENUMSTR  enum_base_type? LCURL enum_name_declaration ( COMMA enum_name_declaration )* RCURL packed_dimension*
+	|  STRINGSTR 
+	|  CHANDLESTR 
+	|  VIRTUALSTR  (  INTERFACESTR  )? interface_identifier
+	| ( class_scope | package_scope )? type_identifier packed_dimension*
+	| class_type
+	|  EVENTSTR 
+	| ps_covergroup_identifier
+	| type_reference;
+
+data_type_or_implicit
+locals [ Data_type_or_implicitContextExt extendedContext ]
+	: data_type
+	| implicit_data_type;
+
+implicit_data_type
+locals [ Implicit_data_typeContextExt extendedContext ]
+	: ( signing )? packed_dimension*;
+
+enum_base_type
+locals [ Enum_base_typeContextExt extendedContext ]
+	: integer_atom_type ( signing )?
+	| integer_vector_type signing? ( packed_dimension )?
+	| type_identifier ( packed_dimension )?;
+
+enum_name_declaration
+locals [ Enum_name_declarationContextExt extendedContext ]
+	: enum_identifier ( enum_name_declaration_part1 ( COLON ( Zero_Or_One | EDGE_SPEC | Decimal_number ) )? RBRACK )? ( ASSIGN constant_expression )?;
+
+enum_name_declaration_part1
+locals [ Enum_name_declaration_part1ContextExt extendedContext ]
+	: LBRACK ( Zero_Or_One | EDGE_SPEC | Decimal_number );
+
+class_scope
+locals [ Class_scopeContextExt extendedContext ]
+	: class_type  COLONCOLON ;
+
+class_type
+locals [ Class_typeContextExt extendedContext ]
+	: ps_class_identifier ( parameter_value_assignment )? class_type_part1*;
+
+class_type_part1
+locals [ Class_type_part1ContextExt extendedContext ]
+	:  COLONCOLON  class_identifier ( parameter_value_assignment )?;
+
+integer_type
+locals [ Integer_typeContextExt extendedContext ]
+	: integer_vector_type
+	| integer_atom_type;
+
+integer_atom_type
+locals [ Integer_atom_typeContextExt extendedContext ]
+	:  BYTESTR 
+	|  SHORTINTSTR 
+	|  INTSTR 
+	|  LONGINTSTR 
+	|  INTEGERSTR 
+	|  TIMESTR ;
+
+integer_vector_type
+locals [ Integer_vector_typeContextExt extendedContext ]
+	:  BITSTR 
+	|  LOGICSTR 
+	|  REGSTR ;
+
+non_integer_type
+locals [ Non_integer_typeContextExt extendedContext ]
+	:  SHORTREAL 
+	|  REALSTR 
+	|  REALTIMESTR ;
+
+net_type
+locals [ Net_typeContextExt extendedContext ]
+	:  SUPPLY0STR 
+	|  SUPPLY1STR 
+	|  TRISTR 
+	|  TRIANDSTR 
+	|  TRIORSTR 
+	|  TRIREGSTR 
+	|  TRI0STR 
+	|  TRI1STR 
+	|  UWIRESTR 
+	|  WIRESTR 
+	|  WANDSTR 
+	|  WORSTR ;
+
+net_port_type
+locals [ Net_port_typeContextExt extendedContext ]
+	: net_type? data_type_or_implicit;
+
+variable_port_type
+locals [ Variable_port_typeContextExt extendedContext ]
+	: var_data_type;
+
+var_data_type
+locals [ Var_data_typeContextExt extendedContext ]
+	: data_type
+	|  VARSTR  data_type_or_implicit;
+
+signing
+locals [ SigningContextExt extendedContext ]
+	:  SIGNEDSTR 
+	|  UNSIGNEDSTR ;
+
+simple_type
+locals [ Simple_typeContextExt extendedContext ]
+	: integer_type
+	| non_integer_type
+	| ps_type_identifier
+	| ps_parameter_identifier;
+
+struct_union_member
+locals [ Struct_union_memberContextExt extendedContext ]
+	: attribute_instance* random_qualifier? data_type_or_void list_of_variable_decl_assignments SEMI;
+
+data_type_or_void
+locals [ Data_type_or_voidContextExt extendedContext ]
+	: data_type
+	|  VOIDSTR ;
+
+struct_union
+locals [ Struct_unionContextExt extendedContext ]
+	:  STRUCTSTR 
+	|  UNIONSTR  (  TAGGEDSTR  )?;
+
+type_reference
+locals [ Type_referenceContextExt extendedContext ]
+	:  TYPESTR  LPAREN expression RPAREN
+	|  TYPESTR  LPAREN data_type RPAREN;
+
+drive_strength
+locals [ Drive_strengthContextExt extendedContext ]
+	: LPAREN strength0 COMMA strength1 RPAREN
+	| LPAREN strength1 COMMA strength0 RPAREN
+	| LPAREN strength0 COMMA  HIGHZ1STR  RPAREN
+	| LPAREN strength1 COMMA  HIGHZ0STR  RPAREN
+	| LPAREN  HIGHZ0STR  COMMA strength1 RPAREN
+	| LPAREN  HIGHZ1STR  COMMA strength0 RPAREN;
+
+strength0
+locals [ Strength0ContextExt extendedContext ]
+	:  SUPPLY0STR 
+	|  STRONG0 
+	|  PULL0STR 
+	|  WEAK0STR ;
+
+strength1
+locals [ Strength1ContextExt extendedContext ]
+	:  SUPPLY1STR 
+	|  STRONG1 
+	|  PULL1STR 
+	|  WEAK1STR ;
+
+charge_strength
+locals [ Charge_strengthContextExt extendedContext ]
+	: LPAREN  SMALLSTR  RPAREN
+	| LPAREN  MEDIUMSTR  RPAREN
+	| LPAREN  LARGESTR  RPAREN;
+
+delay3
+locals [ Delay3ContextExt extendedContext ]
+	: HASH delay_value
+	| HASH LPAREN mintypmax_expression ( COMMA mintypmax_expression ( COMMA mintypmax_expression )? )? RPAREN;
+
+delay2
+locals [ Delay2ContextExt extendedContext ]
+	: HASH delay_value
+	| HASH LPAREN mintypmax_expression ( COMMA mintypmax_expression )? RPAREN;
+
+delay_value
+locals [ Delay_valueContextExt extendedContext ]
+	: EDGE_SPEC
+	| Zero_Or_One
+	| Decimal_number
+	| Real_number
+	| ps_identifier
+	| time_literal
+	|  ONESTEPSTR ;
+
+list_of_defparam_assignments
+locals [ List_of_defparam_assignmentsContextExt extendedContext ]
+	: defparam_assignment ( COMMA defparam_assignment )*;
+
+list_of_genvar_identifiers
+locals [ List_of_genvar_identifiersContextExt extendedContext ]
+	: genvar_identifier ( COMMA genvar_identifier )*;
+
+list_of_interface_identifiers
+locals [ List_of_interface_identifiersContextExt extendedContext ]
+	: list_of_interface_identifiers_part1 ( COMMA list_of_interface_identifiers_part1 )*;
+
+list_of_interface_identifiers_part1
+locals [ List_of_interface_identifiers_part1ContextExt extendedContext ]
+	: interface_identifier unpacked_dimension*;
+
+list_of_param_assignments
+locals [ List_of_param_assignmentsContextExt extendedContext ]
+	: param_assignment ( COMMA param_assignment )*;
+
+list_of_port_identifiers
+locals [ List_of_port_identifiersContextExt extendedContext ]
+	: list_of_port_identifiers_part1 ( COMMA list_of_port_identifiers_part1 )*;
+
+list_of_port_identifiers_part1
+locals [ List_of_port_identifiers_part1ContextExt extendedContext ]
+	: port_identifier unpacked_dimension*;
+
+list_of_udp_port_identifiers
+locals [ List_of_udp_port_identifiersContextExt extendedContext ]
+	: port_identifier ( COMMA port_identifier )*;
+
+list_of_specparam_assignments
+locals [ List_of_specparam_assignmentsContextExt extendedContext ]
+	: specparam_assignment ( COMMA specparam_assignment )*;
+
+list_of_tf_variable_identifiers
+locals [ List_of_tf_variable_identifiersContextExt extendedContext ]
+	: list_of_tf_variable_identifiers_part1 ( COMMA list_of_tf_variable_identifiers_part1 )*;
+
+list_of_tf_variable_identifiers_part1
+locals [ List_of_tf_variable_identifiers_part1ContextExt extendedContext ]
+	: port_identifier ( variable_dimension )* ( ASSIGN expression )?;
+
+list_of_type_assignments
+locals [ List_of_type_assignmentsContextExt extendedContext ]
+	: type_assignment ( COMMA type_assignment )*;
+
+list_of_variable_decl_assignments
+locals [ List_of_variable_decl_assignmentsContextExt extendedContext ]
+	: variable_decl_assignment ( COMMA variable_decl_assignment )*;
+
+list_of_variable_identifiers
+locals [ List_of_variable_identifiersContextExt extendedContext ]
+	: list_of_variable_identifiers_part1 ( COMMA list_of_variable_identifiers_part1 )*;
+
+list_of_variable_identifiers_part1
+locals [ List_of_variable_identifiers_part1ContextExt extendedContext ]
+	: variable_identifier variable_dimension*;
+
+list_of_variable_port_identifiers
+locals [ List_of_variable_port_identifiersContextExt extendedContext ]
+	: list_of_variable_port_identifiers_part1 ( COMMA list_of_variable_port_identifiers_part1 )*;
+
+list_of_variable_port_identifiers_part1
+locals [ List_of_variable_port_identifiers_part1ContextExt extendedContext ]
+	: port_identifier variable_dimension* ( ASSIGN constant_expression )?;
+
+list_of_virtual_interface_decl
+locals [ List_of_virtual_interface_declContextExt extendedContext ]
+	: list_of_virtual_interface_decl_part1 ( COMMA list_of_virtual_interface_decl_part1 )*;
+
+list_of_virtual_interface_decl_part1
+locals [ List_of_virtual_interface_decl_part1ContextExt extendedContext ]
+	: variable_identifier ( ASSIGN interface_instance_identifier )?;
+
+defparam_assignment
+locals [ Defparam_assignmentContextExt extendedContext ]
+	: hierarchical_parameter_identifier ASSIGN constant_mintypmax_expression;
+
+list_of_net_decl_assignments
+locals [ List_of_net_decl_assignmentsContextExt extendedContext ]
+	: net_decl_assignment ( COMMA net_decl_assignment )*;
+
+net_decl_assignment
+locals [ Net_decl_assignmentContextExt extendedContext ]
+	: net_identifier unpacked_dimension* ( ASSIGN expression )?;
+
+param_assignment
+locals [ Param_assignmentContextExt extendedContext ]
+	: parameter_identifier ( unpacked_dimension )* ( ASSIGN constant_param_expression )*;
+
+specparam_assignment
+locals [ Specparam_assignmentContextExt extendedContext ]
+	: specparam_identifier ASSIGN constant_mintypmax_expression
+	| pulse_control_specparam;
+
+type_assignment
+locals [ Type_assignmentContextExt extendedContext ]
+	: type_identifier ( ASSIGN data_type )?;
+
+pulse_control_specparam
+locals [ Pulse_control_specparamContextExt extendedContext ]
+	:  PATHPULSEDOLLAR  ASSIGN LPAREN reject_limit_value ( COMMA error_limit_value )? RPAREN
+	|  PATHPULSEDOLLAR  specify_input_terminal_descriptor DOLLAR specify_output_terminal_descriptor ASSIGN LPAREN reject_limit_value ( COMMA error_limit_value )? RPAREN;
+
+error_limit_value
+locals [ Error_limit_valueContextExt extendedContext ]
+	: limit_value;
+
+reject_limit_value
+locals [ Reject_limit_valueContextExt extendedContext ]
+	: limit_value;
+
+limit_value
+locals [ Limit_valueContextExt extendedContext ]
+	: constant_mintypmax_expression;
+
+variable_decl_assignment
+locals [ Variable_decl_assignmentContextExt extendedContext ]
+	: variable_identifier variable_dimension* ( ASSIGN expression )?
+	| dynamic_array_variable_identifier unsized_dimension ( variable_dimension )* ( ASSIGN dynamic_array_new )?
+	| class_variable_identifier ( ASSIGN class_new )?;
+
+class_new
+locals [ Class_newContextExt extendedContext ]
+	:  NEWSTR  ( LPAREN list_of_arguments RPAREN | expression )?;
+
+dynamic_array_new
+locals [ Dynamic_array_newContextExt extendedContext ]
+	:  NEWSTR  LBRACK expression RBRACK ( LPAREN expression RPAREN )?;
+
+unpacked_dimension
+locals [ Unpacked_dimensionContextExt extendedContext ]
+	: LBRACK constant_range RBRACK
+	| LBRACK constant_expression RBRACK;
+
+packed_dimension
+locals [ Packed_dimensionContextExt extendedContext ]
+	: LBRACK constant_range RBRACK
+	| unsized_dimension;
+
+associative_dimension
+locals [ Associative_dimensionContextExt extendedContext ]
+	: LBRACK data_type RBRACK
+	| LBRACK  STAR  RBRACK;
+
+variable_dimension
+locals [ Variable_dimensionContextExt extendedContext ]
+	: unsized_dimension
+	| unpacked_dimension
+	| associative_dimension
+	| queue_dimension;
+
+queue_dimension
+locals [ Queue_dimensionContextExt extendedContext ]
+	: LBRACK DOLLAR ( COLON constant_expression )? RBRACK;
+
+unsized_dimension
+locals [ Unsized_dimensionContextExt extendedContext ]
+	: LBRACK RBRACK;
+
+function_data_type_or_implicit
+locals [ Function_data_type_or_implicitContextExt extendedContext ]
+	: data_type_or_void
+	| implicit_data_type;
+
+function_declaration
+locals [ Function_declarationContextExt extendedContext ]
+	:  FUNCTIONSTR  lifetime? function_body_declaration;
+
+function_body_declaration
+locals [ Function_body_declarationContextExt extendedContext ]
+	: function_data_type_or_implicit ( interface_identifier DOT | class_scope )? function_identifier SEMI ( tf_item_declaration )* ( function_statement_or_null )*  ENDFUNCTIONSTR  ( COLON function_identifier )?
+	| function_data_type_or_implicit ( interface_identifier DOT | class_scope )? function_identifier LPAREN tf_port_list? RPAREN SEMI block_item_declaration* function_statement_or_null*  ENDFUNCTIONSTR  ( COLON function_identifier )?;
+
+function_prototype
+locals [ Function_prototypeContextExt extendedContext ]
+	:  FUNCTIONSTR  data_type_or_void function_identifier LPAREN tf_port_list? RPAREN;
+
+dpi_import_export
+locals [ Dpi_import_exportContextExt extendedContext ]
+	:  IMPORTSTR  dpi_spec_string dpi_function_import_property? ( c_identifier ASSIGN )? dpi_function_proto SEMI
+	|  IMPORTSTR  dpi_spec_string dpi_task_import_property? ( c_identifier ASSIGN )? dpi_task_proto SEMI
+	|  EXPORT  dpi_spec_string ( c_identifier ASSIGN )?  FUNCTIONSTR  function_identifier SEMI
+	|  EXPORT  dpi_spec_string ( c_identifier ASSIGN )?  TASKSTR  task_identifier SEMI;
+
+dpi_spec_string
+locals [ Dpi_spec_stringContextExt extendedContext ]
+	:  DPI_SPEC_ING2STR 
+	|  DPI_SPEC_ING1STR ;
+
+dpi_function_import_property
+locals [ Dpi_function_import_propertyContextExt extendedContext ]
+	:  CONTEXTSTR 
+	|  PURESTR ;
+
+dpi_task_import_property
+locals [ Dpi_task_import_propertyContextExt extendedContext ]
+	:  CONTEXTSTR ;
+
+dpi_function_proto
+locals [ Dpi_function_protoContextExt extendedContext ]
+	: function_prototype;
+
+dpi_task_proto
+locals [ Dpi_task_protoContextExt extendedContext ]
+	: task_prototype;
+
+task_declaration
+locals [ Task_declarationContextExt extendedContext ]
+	:  TASKSTR  lifetime? task_body_declaration;
+
+task_body_declaration
+locals [ Task_body_declarationContextExt extendedContext ]
+	: ( interface_identifier DOT | class_scope )? task_identifier SEMI ( tf_item_declaration )* ( statement_or_null )*  ENDTASKSTR  ( COLON task_identifier )?
+	| ( interface_identifier DOT | class_scope )? task_identifier LPAREN tf_port_list? RPAREN SEMI ( block_item_declaration )* statement_or_null*  ENDTASKSTR  ( COLON task_identifier )?;
+
+tf_item_declaration
+locals [ Tf_item_declarationContextExt extendedContext ]
+	: block_item_declaration
+	| tf_port_declaration;
+
+tf_port_list
+locals [ Tf_port_listContextExt extendedContext ]
+	: tf_port_item ( COMMA tf_port_item )*;
+
+tf_port_item
+locals [ Tf_port_itemContextExt extendedContext ]
+	: attribute_instance* ( tf_port_direction )? (  VARSTR  )? data_type_or_implicit ( port_identifier variable_dimension* ( ASSIGN expression )? )?;
+
+tf_port_direction
+locals [ Tf_port_directionContextExt extendedContext ]
+	: port_direction
+	|  CONSTSTR   REFSTR ;
+
+tf_port_declaration
+locals [ Tf_port_declarationContextExt extendedContext ]
+	: attribute_instance* tf_port_direction (  VARSTR  )? data_type_or_implicit list_of_tf_variable_identifiers SEMI;
+
+task_prototype
+locals [ Task_prototypeContextExt extendedContext ]
+	:  TASKSTR  task_identifier LPAREN tf_port_list? RPAREN;
+
+block_item_declaration
+locals [ Block_item_declarationContextExt extendedContext ]
+	: attribute_instance* data_declaration
+	| attribute_instance* local_parameter_declaration SEMI
+	| attribute_instance* parameter_declaration SEMI
+	| attribute_instance* overload_declaration
+	| attribute_instance* let_declaration;
+
+overload_declaration
+locals [ Overload_declarationContextExt extendedContext ]
+	:  BINDSTR  overload_operator  FUNCTIONSTR  data_type function_identifier LPAREN overload_proto_formals RPAREN SEMI;
+
+overload_operator
+locals [ Overload_operatorContextExt extendedContext ]
+	: PLUS
+	| increment
+	| MINUS
+	| decrement
+	| STAR
+	| STARSTAR
+	| DIV
+	| MODULO
+	| EQUALS
+	| NOT_EQUALS
+	| LT
+	| LE
+	| GT
+	| GE
+	| ASSIGN;
+
+overload_proto_formals
+locals [ Overload_proto_formalsContextExt extendedContext ]
+	: data_type ( COMMA data_type )*;
+
+virtual_interface_declaration
+locals [ Virtual_interface_declarationContextExt extendedContext ]
+	:  VIRTUALSTR  (  INTERFACESTR  )? interface_identifier ( parameter_value_assignment )? ( DOT modport_identifier )? list_of_virtual_interface_decl SEMI;
+
+modport_declaration
+locals [ Modport_declarationContextExt extendedContext ]
+	:  MODPORTSTR  modport_item ( COMMA modport_item )* SEMI;
+
+modport_item
+locals [ Modport_itemContextExt extendedContext ]
+	: modport_identifier LPAREN modport_ports_declaration ( COMMA modport_ports_declaration )* RPAREN;
+
+modport_ports_declaration
+locals [ Modport_ports_declarationContextExt extendedContext ]
+	: attribute_instance* modport_simple_ports_declaration
+	| attribute_instance* modport_tf_ports_declaration
+	| attribute_instance* modport_clocking_declaration;
+
+modport_clocking_declaration
+locals [ Modport_clocking_declarationContextExt extendedContext ]
+	:  CLOCKINGSTR  clocking_identifier;
+
+modport_simple_ports_declaration
+locals [ Modport_simple_ports_declarationContextExt extendedContext ]
+	: port_direction modport_simple_port ( COMMA modport_simple_port )*;
+
+modport_simple_port
+locals [ Modport_simple_portContextExt extendedContext ]
+	: port_identifier
+	| DOT port_identifier LPAREN expression? RPAREN;
+
+modport_tf_ports_declaration
+locals [ Modport_tf_ports_declarationContextExt extendedContext ]
+	: import_export modport_tf_port ( COMMA modport_tf_port )*;
+
+modport_tf_port
+locals [ Modport_tf_portContextExt extendedContext ]
+	: method_prototype
+	| tf_identifier;
+
+import_export
+locals [ Import_exportContextExt extendedContext ]
+	:  IMPORTSTR 
+	|  EXPORT ;
+
+concurrent_assertion_item
+locals [ Concurrent_assertion_itemContextExt extendedContext ]
+	: ( block_identifier COLON )? concurrent_assertion_statement
+	| checker_instantiation;
+
+concurrent_assertion_statement
+locals [ Concurrent_assertion_statementContextExt extendedContext ]
+	: assert_property_statement
+	| assume_property_statement
+	| cover_property_statement
+	| cover_sequence_statement
+	| restrict_property_statement;
+
+assert_property_statement
+locals [ Assert_property_statementContextExt extendedContext ]
+	:  ASSERTSTR   PROPERTYSTR  LPAREN property_spec RPAREN action_block;
+
+assume_property_statement
+locals [ Assume_property_statementContextExt extendedContext ]
+	:  ASSUMESTR   PROPERTYSTR  LPAREN property_spec RPAREN action_block;
+
+cover_property_statement
+locals [ Cover_property_statementContextExt extendedContext ]
+	:  COVERSTR   PROPERTYSTR  LPAREN property_spec RPAREN statement_or_null;
+
+expect_property_statement
+locals [ Expect_property_statementContextExt extendedContext ]
+	:  EXPECTSTR  LPAREN property_spec RPAREN action_block;
+
+cover_sequence_statement
+locals [ Cover_sequence_statementContextExt extendedContext ]
+	:  COVERSTR   SEQUENCESTR  LPAREN clocking_event? (  DISABLESTR   IFFSTR  LPAREN expression_or_dist RPAREN )? sequence_expr RPAREN statement_or_null;
+
+restrict_property_statement
+locals [ Restrict_property_statementContextExt extendedContext ]
+	:  RESTRICTSTR   PROPERTYSTR  LPAREN property_spec RPAREN SEMI;
+
+property_instance
+locals [ Property_instanceContextExt extendedContext ]
+	: ps_or_hierarchical_property_identifier ( LPAREN property_list_of_arguments? RPAREN )?;
+
+property_list_of_arguments
+locals [ Property_list_of_argumentsContextExt extendedContext ]
+	: property_actual_arg? property_list_of_arguments_part1* ( COMMA property_list_of_arguments_part2 )*
+	| property_list_of_arguments_part2 ( COMMA property_list_of_arguments_part2 )*;
+
+property_list_of_arguments_part1
+locals [ Property_list_of_arguments_part1ContextExt extendedContext ]
+	: COMMA property_actual_arg?;
+
+property_list_of_arguments_part2
+locals [ Property_list_of_arguments_part2ContextExt extendedContext ]
+	: DOT identifier LPAREN property_actual_arg? RPAREN;
+
+property_actual_arg
+locals [ Property_actual_argContextExt extendedContext ]
+	: property_expr
+	| sequence_actual_arg;
+
+assertion_item_declaration
+locals [ Assertion_item_declarationContextExt extendedContext ]
+	: property_declaration
+	| sequence_declaration
+	| let_declaration;
+
+property_declaration
+locals [ Property_declarationContextExt extendedContext ]
+	:  PROPERTYSTR  property_identifier ( LPAREN property_port_list? RPAREN )? SEMI assertion_variable_declaration* property_statement_spec  ENDPROPERTYSTR  ( COLON property_identifier )?;
+
+property_port_list
+locals [ Property_port_listContextExt extendedContext ]
+	: property_port_item ( COMMA property_port_item )*;
+
+property_port_item
+locals [ Property_port_itemContextExt extendedContext ]
+	: attribute_instance* (  LOCALSTR  property_lvar_port_direction? )? property_formal_type port_identifier variable_dimension* ( ASSIGN property_actual_arg )*;
+
+property_lvar_port_direction
+locals [ Property_lvar_port_directionContextExt extendedContext ]
+	:  INPUTSTR ;
+
+property_formal_type
+locals [ Property_formal_typeContextExt extendedContext ]
+	: sequence_formal_type
+	|  PROPERTYSTR ;
+
+property_spec
+locals [ Property_specContextExt extendedContext ]
+	: ( clocking_event )? (  DISABLESTR   IFFSTR  LPAREN expression_or_dist RPAREN )? property_expr;
+
+property_statement_spec
+locals [ Property_statement_specContextExt extendedContext ]
+	: clocking_event? (  DISABLESTR   IFFSTR  LPAREN expression_or_dist RPAREN )? property_statement;
+
+property_statement
+locals [ Property_statementContextExt extendedContext ]
+	: property_expr SEMI
+	|  CASESTR  LPAREN expression_or_dist RPAREN property_case_item property_case_item*  ENDCASESTR 
+	|  IFSTR  LPAREN expression_or_dist RPAREN property_expr (  ELSESTR  property_expr )?;
+
+property_case_item
+locals [ Property_case_itemContextExt extendedContext ]
+	: expression_or_dist ( COMMA expression_or_dist )* COLON property_statement
+	|  DEFAULTSTR  ( COLON )? property_statement;
+
+property_expr
+locals [ Property_exprContextExt extendedContext ]
+	: sequence_expr
+	| LPAREN property_expr RPAREN
+	|  NOTSTR  property_expr
+	| property_expr  ORSTR  property_expr
+	| property_expr  ANDSTR  property_expr
+	| sequence_expr  ORDERIVE  property_expr
+	| sequence_expr  ORIMPLIES  property_expr
+	|  IFSTR  LPAREN expression_or_dist RPAREN property_expr (  ELSESTR  property_expr )?
+	| property_instance
+	| clocking_event property_expr;
+
+sequence_declaration
+locals [ Sequence_declarationContextExt extendedContext ]
+	:  SEQUENCESTR  sequence_identifier ( LPAREN sequence_port_list? RPAREN )? SEMI assertion_variable_declaration* sequence_expr SEMI  ENDSEQUENCESTR  ( COLON sequence_identifier )?;
+
+sequence_port_list
+locals [ Sequence_port_listContextExt extendedContext ]
+	: sequence_port_item ( COMMA sequence_port_item )*;
+
+sequence_port_item
+locals [ Sequence_port_itemContextExt extendedContext ]
+	: attribute_instance* (  LOCALSTR  sequence_lvar_port_direction? )? sequence_formal_type port_identifier variable_dimension* ( ASSIGN sequence_actual_arg )?;
+
+sequence_lvar_port_direction
+locals [ Sequence_lvar_port_directionContextExt extendedContext ]
+	:  INPUTSTR 
+	|  INOUTSTR 
+	|  OUTPUTSTR ;
+
+sequence_formal_type
+locals [ Sequence_formal_typeContextExt extendedContext ]
+	: data_type_or_implicit
+	|  SEQUENCESTR 
+	|  EVENTSTR 
+	|  UNTYPEDSTR ;
+
+sequence_expr
+locals [ Sequence_exprContextExt extendedContext ]
+	: cycle_delay_range sequence_expr ( cycle_delay_range sequence_expr )*
+	| sequence_expr cycle_delay_range sequence_expr ( cycle_delay_range sequence_expr )*
+	| expression_or_dist ( boolean_abbrev )?
+	| LPAREN expression_or_dist ( COMMA sequence_match_item )* RPAREN ( boolean_abbrev )?
+	| sequence_instance ( sequence_abbrev )?
+	| LPAREN sequence_expr ( COMMA sequence_match_item )* RPAREN ( sequence_abbrev )?
+	| sequence_expr  ANDSTR  sequence_expr
+	| sequence_expr  INTERSECTSTR  sequence_expr
+	| sequence_expr  ORSTR  sequence_expr
+	|  FIRST_MATCHSTR  LPAREN sequence_expr ( COMMA sequence_match_item )* RPAREN
+	| expression_or_dist  THROUGHOUTSTR  sequence_expr
+	| sequence_expr  WITHINSTR  sequence_expr
+	| clocking_event sequence_expr;
+
+cycle_delay_range
+locals [ Cycle_delay_rangeContextExt extendedContext ]
+	: DOUBLE_HASH constant_primary
+	| DOUBLE_HASH LBRACK cycle_delay_const_range_expression RBRACK
+	| DOUBLE_HASH LBRACK  STAR  RBRACK
+	| DOUBLE_HASH LBRACK  PLUS  RBRACK;
+
+sequence_method_call
+locals [ Sequence_method_callContextExt extendedContext ]
+	: sequence_instance DOT method_identifier;
+
+sequence_match_item
+locals [ Sequence_match_itemContextExt extendedContext ]
+	: operator_assignment
+	| inc_or_dec_expression
+	| subroutine_call;
+
+sequence_instance
+locals [ Sequence_instanceContextExt extendedContext ]
+	: ps_or_hierarchical_sequence_identifier ( LPAREN sequence_list_of_arguments? RPAREN )?;
+
+sequence_list_of_arguments
+locals [ Sequence_list_of_argumentsContextExt extendedContext ]
+	: sequence_actual_arg? sequence_list_of_arguments_part1* ( COMMA sequence_list_of_arguments_part2 )*
+	| sequence_list_of_arguments_part2 ( COMMA sequence_list_of_arguments_part2 )*;
+
+sequence_list_of_arguments_part1
+locals [ Sequence_list_of_arguments_part1ContextExt extendedContext ]
+	: COMMA sequence_actual_arg?;
+
+sequence_list_of_arguments_part2
+locals [ Sequence_list_of_arguments_part2ContextExt extendedContext ]
+	: DOT identifier LPAREN sequence_actual_arg? RPAREN;
+
+sequence_actual_arg
+locals [ Sequence_actual_argContextExt extendedContext ]
+	: event_expression
+	| sequence_expr;
+
+boolean_abbrev
+locals [ Boolean_abbrevContextExt extendedContext ]
+	: consecutive_repetition
+	| non_consecutive_repetition
+	| goto_repetition;
+
+sequence_abbrev
+locals [ Sequence_abbrevContextExt extendedContext ]
+	: consecutive_repetition;
+
+consecutive_repetition
+locals [ Consecutive_repetitionContextExt extendedContext ]
+	: LBRACK  STAR  const_or_range_expression RBRACK
+	| LBRACK  STAR  RBRACK
+	| LBRACK  PLUS  RBRACK;
+
+non_consecutive_repetition
+locals [ Non_consecutive_repetitionContextExt extendedContext ]
+	: LBRACK ASSIGN const_or_range_expression RBRACK;
+
+goto_repetition
+locals [ Goto_repetitionContextExt extendedContext ]
+	: LBRACK  DERIVE  const_or_range_expression RBRACK;
+
+const_or_range_expression
+locals [ Const_or_range_expressionContextExt extendedContext ]
+	: constant_expression
+	| cycle_delay_const_range_expression;
+
+cycle_delay_const_range_expression
+locals [ Cycle_delay_const_range_expressionContextExt extendedContext ]
+	: constant_expression COLON constant_expression
+	| constant_expression COLON DOLLAR;
+
+expression_or_dist
+locals [ Expression_or_distContextExt extendedContext ]
+	: expression (  DISTSTR  LCURL dist_list RCURL )?;
+
+assertion_variable_declaration
+locals [ Assertion_variable_declarationContextExt extendedContext ]
+	: var_data_type list_of_variable_decl_assignments SEMI;
+
+let_declaration
+locals [ Let_declarationContextExt extendedContext ]
+	:  LETSTR  let_identifier ( LPAREN let_port_list? RPAREN )? ASSIGN expression SEMI;
+
+let_identifier
+locals [ Let_identifierContextExt extendedContext ]
+	: identifier;
+
+let_port_list
+locals [ Let_port_listContextExt extendedContext ]
+	: let_port_item ( COMMA let_port_item )*;
+
+let_port_item
+locals [ Let_port_itemContextExt extendedContext ]
+	: attribute_instance* let_formal_type port_identifier variable_dimension* ( ASSIGN expression )?;
+
+let_formal_type
+locals [ Let_formal_typeContextExt extendedContext ]
+	: data_type_or_implicit;
+
+let_expression
+locals [ Let_expressionContextExt extendedContext ]
+	: package_scope? let_identifier ( LPAREN let_list_of_arguments? RPAREN )?;
+
+let_list_of_arguments
+locals [ Let_list_of_argumentsContextExt extendedContext ]
+	: let_actual_arg? let_list_of_arguments_part1* ( COMMA let_list_of_arguments_part2 )*
+	| let_list_of_arguments_part2 ( COMMA let_list_of_arguments_part2 )*;
+
+let_list_of_arguments_part1
+locals [ Let_list_of_arguments_part1ContextExt extendedContext ]
+	: COMMA let_actual_arg?;
+
+let_list_of_arguments_part2
+locals [ Let_list_of_arguments_part2ContextExt extendedContext ]
+	: DOT identifier LPAREN let_actual_arg? RPAREN;
+
+let_actual_arg
+locals [ Let_actual_argContextExt extendedContext ]
+	: expression;
+
+covergroup_declaration
+locals [ Covergroup_declarationContextExt extendedContext ]
+	:  COVERGROUPSTR  covergroup_identifier ( LPAREN ( tf_port_list )? RPAREN )? ( coverage_event )? SEMI ( coverage_spec_or_option )*  ENDGROUPSTR  ( COLON covergroup_identifier )?;
+
+coverage_spec_or_option
+locals [ Coverage_spec_or_optionContextExt extendedContext ]
+	: ( attribute_instance )* coverage_spec
+	| ( attribute_instance )* coverage_option SEMI;
+
+coverage_option
+locals [ Coverage_optionContextExt extendedContext ]
+	:  OPTIONDOT  member_identifier ASSIGN expression
+	|  TYPE_OPTIONDOT  member_identifier ASSIGN constant_expression;
+
+coverage_spec
+locals [ Coverage_specContextExt extendedContext ]
+	: cover_point
+	| cover_cross;
+
+coverage_event
+locals [ Coverage_eventContextExt extendedContext ]
+	: clocking_event
+	|  WITHSTR   FUNCTIONSTR   SAMPLESTR  LPAREN ( tf_port_list )? RPAREN
+	|  ATTHERATELPAREN  block_event_expression RPAREN;
+
+block_event_expression
+locals [ Block_event_expressionContextExt extendedContext ]
+	: (  BEGINSTR  hierarchical_btf_identifier |  ENDSTR  hierarchical_btf_identifier ) (  ORSTR  block_event_expression )*;
+
+hierarchical_btf_identifier
+locals [ Hierarchical_btf_identifierContextExt extendedContext ]
+	: hierarchical_tf_identifier
+	| hierarchical_block_identifier
+	| hierarchical_identifier ( class_scope )? method_identifier;
+
+cover_point
+locals [ Cover_pointContextExt extendedContext ]
+	: ( cover_point_identifier COLON )?  COVERPOINTSTR  expression (  IFFSTR  LPAREN expression RPAREN )? bins_or_empty;
+
+bins_or_empty
+locals [ Bins_or_emptyContextExt extendedContext ]
+	: LCURL ( attribute_instance )* ( bins_or_options SEMI )* RCURL
+	| SEMI;
+
+bins_or_options
+locals [ Bins_or_optionsContextExt extendedContext ]
+	: coverage_option
+	| (  WILDCARDSTR  )? bins_keyword bins_or_options_part1 ASSIGN LCURL open_range_list RCURL (  IFFSTR  LPAREN expression RPAREN )?
+	| (  WILDCARDSTR  )? bins_keyword bin_identifier ( LBRACK RBRACK )? ASSIGN trans_list (  IFFSTR  LPAREN expression RPAREN )?
+	| bins_keyword bins_or_options_part1 ASSIGN  DEFAULTSTR  (  IFFSTR  LPAREN expression RPAREN )?
+	| bins_keyword bin_identifier ASSIGN  DEFAULTSTR   SEQUENCESTR  (  IFFSTR  LPAREN expression RPAREN )?;
+
+bins_or_options_part1
+locals [ Bins_or_options_part1ContextExt extendedContext ]
+	: bin_identifier ( LBRACK ( expression )? RBRACK )?;
+
+bins_keyword
+locals [ Bins_keywordContextExt extendedContext ]
+	:  BINSSTR 
+	|  ILLEGAL_BINSSTR 
+	|  IGNORE_BINSSTR ;
+
+range_list
+locals [ Range_listContextExt extendedContext ]
+	: value_range ( COMMA value_range )*;
+
+trans_list
+locals [ Trans_listContextExt extendedContext ]
+	: LPAREN trans_set RPAREN ( COMMA LPAREN trans_set RPAREN )*;
+
+trans_set
+locals [ Trans_setContextExt extendedContext ]
+	: trans_range_list (  IMPLIES  trans_range_list )*;
+
+trans_range_list
+locals [ Trans_range_listContextExt extendedContext ]
+	: trans_item
+	| trans_item LBRACK  STAR  repeat_range RBRACK
+	| trans_item LBRACK  DERIVE  repeat_range RBRACK
+	| trans_item LBRACK ASSIGN repeat_range RBRACK;
+
+trans_item
+locals [ Trans_itemContextExt extendedContext ]
+	: range_list;
+
+repeat_range
+locals [ Repeat_rangeContextExt extendedContext ]
+	: expression
+	| expression COLON expression;
+
+cover_cross
+locals [ Cover_crossContextExt extendedContext ]
+	: ( cross_identifier COLON )?  CROSSSTR  list_of_coverpoints (  IFFSTR  LPAREN expression RPAREN )? select_bins_or_empty;
+
+list_of_coverpoints
+locals [ List_of_coverpointsContextExt extendedContext ]
+	: cross_item COMMA cross_item ( COMMA cross_item )*;
+
+cross_item
+locals [ Cross_itemContextExt extendedContext ]
+	: cover_point_identifier
+	| variable_identifier;
+
+select_bins_or_empty
+locals [ Select_bins_or_emptyContextExt extendedContext ]
+	: LCURL ( bins_selection_or_option SEMI )* RCURL
+	| SEMI;
+
+bins_selection_or_option
+locals [ Bins_selection_or_optionContextExt extendedContext ]
+	: attribute_instance* coverage_option
+	| attribute_instance* bins_selection;
+
+bins_selection
+locals [ Bins_selectionContextExt extendedContext ]
+	: bins_keyword bin_identifier ASSIGN select_expression (  IFFSTR  LPAREN expression RPAREN )?;
+
+select_expression
+locals [ Select_expressionContextExt extendedContext ]
+	: ( select_condition | '!' select_condition | LPAREN select_expression RPAREN ) select_expression_part1*;
+
+select_expression_part1
+locals [ Select_expression_part1ContextExt extendedContext ]
+	:  LOG_AND  select_expression
+	|  LOG_OR  select_expression;
+
+select_condition
+locals [ Select_conditionContextExt extendedContext ]
+	:  BINSOFSTR  LPAREN bins_expression RPAREN (  INTERSECTSTR  LCURL open_range_list RCURL )?;
+
+bins_expression
+locals [ Bins_expressionContextExt extendedContext ]
+	: variable_identifier
+	| cover_point_identifier ( DOT bins_identifier )?;
+
+open_range_list
+locals [ Open_range_listContextExt extendedContext ]
+	: open_value_range ( COMMA open_value_range )*;
+
+open_value_range
+locals [ Open_value_rangeContextExt extendedContext ]
+	: value_range;
+
+gate_instantiation
+locals [ Gate_instantiationContextExt extendedContext ]
+	: cmos_switchtype ( delay3 )? cmos_switch_instance ( COMMA cmos_switch_instance )* SEMI
+	| enable_gatetype ( drive_strength )? ( delay3 )? enable_gate_instance ( COMMA enable_gate_instance )* SEMI
+	| mos_switchtype ( delay3 )? mos_switch_instance ( COMMA mos_switch_instance )* SEMI
+	| n_input_gatetype ( drive_strength )? ( delay2 )? n_input_gate_instance ( COMMA n_input_gate_instance )* SEMI
+	| n_output_gatetype ( drive_strength )? ( delay2 )? n_output_gate_instance ( COMMA n_output_gate_instance )* SEMI
+	| pass_en_switchtype ( delay2 )? pass_enable_switch_instance ( COMMA pass_enable_switch_instance )* SEMI
+	| pass_switchtype pass_switch_instance ( COMMA pass_switch_instance )* SEMI
+	|  PULLDOWNSTR  ( pulldown_strength )? pull_gate_instance ( COMMA pull_gate_instance )* SEMI
+	|  PULLUPSTR  ( pullup_strength )? pull_gate_instance ( COMMA pull_gate_instance )* SEMI;
+
+cmos_switch_instance
+locals [ Cmos_switch_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal COMMA input_terminal COMMA ncontrol_terminal COMMA pcontrol_terminal RPAREN;
+
+enable_gate_instance
+locals [ Enable_gate_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal COMMA input_terminal COMMA enable_terminal RPAREN;
+
+mos_switch_instance
+locals [ Mos_switch_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal COMMA input_terminal COMMA enable_terminal RPAREN;
+
+n_input_gate_instance
+locals [ N_input_gate_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal COMMA input_terminal ( COMMA input_terminal )* RPAREN;
+
+n_output_gate_instance
+locals [ N_output_gate_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal ( COMMA output_terminal )* COMMA input_terminal RPAREN;
+
+pass_switch_instance
+locals [ Pass_switch_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN inout_terminal COMMA inout_terminal RPAREN;
+
+pass_enable_switch_instance
+locals [ Pass_enable_switch_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN inout_terminal COMMA inout_terminal COMMA enable_terminal RPAREN;
+
+pull_gate_instance
+locals [ Pull_gate_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal RPAREN;
+
+pulldown_strength
+locals [ Pulldown_strengthContextExt extendedContext ]
+	: LPAREN strength0 COMMA strength1 RPAREN
+	| LPAREN strength1 COMMA strength0 RPAREN
+	| LPAREN strength0 RPAREN;
+
+pullup_strength
+locals [ Pullup_strengthContextExt extendedContext ]
+	: LPAREN strength0 COMMA strength1 RPAREN
+	| LPAREN strength1 COMMA strength0 RPAREN
+	| LPAREN strength1 RPAREN;
+
+enable_terminal
+locals [ Enable_terminalContextExt extendedContext ]
+	: expression;
+
+inout_terminal
+locals [ Inout_terminalContextExt extendedContext ]
+	: net_lvalue;
+
+input_terminal
+locals [ Input_terminalContextExt extendedContext ]
+	: expression;
+
+ncontrol_terminal
+locals [ Ncontrol_terminalContextExt extendedContext ]
+	: expression;
+
+output_terminal
+locals [ Output_terminalContextExt extendedContext ]
+	: net_lvalue;
+
+pcontrol_terminal
+locals [ Pcontrol_terminalContextExt extendedContext ]
+	: expression;
+
+cmos_switchtype
+locals [ Cmos_switchtypeContextExt extendedContext ]
+	:  CMOSSTR 
+	|  RCMOSSTR ;
+
+enable_gatetype
+locals [ Enable_gatetypeContextExt extendedContext ]
+	:  BUFIF0STR 
+	|  BUFIF1STR 
+	|  NOTIF0STR 
+	|  NOTIF1STR ;
+
+mos_switchtype
+locals [ Mos_switchtypeContextExt extendedContext ]
+	:  NMOSSTR 
+	|  PMOS 
+	|  RNMOSSTR 
+	|  RPMOSSTR ;
+
+n_input_gatetype
+locals [ N_input_gatetypeContextExt extendedContext ]
+	:  ANDSTR 
+	|  NANDSTR 
+	|  ORSTR 
+	|  NORSTR 
+	|  XORSTRSTR 
+	|  XNORSTR ;
+
+n_output_gatetype
+locals [ N_output_gatetypeContextExt extendedContext ]
+	:  BUFSTR 
+	|  NOTSTR ;
+
+pass_en_switchtype
+locals [ Pass_en_switchtypeContextExt extendedContext ]
+	:  TRANIF0STR 
+	|  TRANIF1STR 
+	|  RTRANIF1STR 
+	|  RTRANIF0STR ;
+
+pass_switchtype
+locals [ Pass_switchtypeContextExt extendedContext ]
+	:  TRANSTR 
+	|  RTRANSTR ;
+
+module_instantiation
+locals [ Module_instantiationContextExt extendedContext ]
+	: module_identifier ( parameter_value_assignment )? hierarchical_instance ( COMMA hierarchical_instance )* SEMI;
+
+parameter_value_assignment
+locals [ Parameter_value_assignmentContextExt extendedContext ]
+	: HASH LPAREN ( list_of_parameter_assignments )? RPAREN;
+
+list_of_parameter_assignments
+locals [ List_of_parameter_assignmentsContextExt extendedContext ]
+	: ordered_parameter_assignment ( COMMA ordered_parameter_assignment )*
+	| named_parameter_assignment ( COMMA named_parameter_assignment )*;
+
+ordered_parameter_assignment
+locals [ Ordered_parameter_assignmentContextExt extendedContext ]
+	: param_expression;
+
+named_parameter_assignment
+locals [ Named_parameter_assignmentContextExt extendedContext ]
+	: DOT parameter_identifier LPAREN ( param_expression )? RPAREN;
+
+hierarchical_instance
+locals [ Hierarchical_instanceContextExt extendedContext ]
+	: name_of_instance LPAREN ( list_of_port_connections )? RPAREN;
+
+name_of_instance
+locals [ Name_of_instanceContextExt extendedContext ]
+	: instance_identifier ( unpacked_dimension )*;
+
+list_of_port_connections
+locals [ List_of_port_connectionsContextExt extendedContext ]
+	: ordered_port_connection ( COMMA ordered_port_connection )*
+	| named_port_connection ( COMMA named_port_connection )*;
+
+ordered_port_connection
+locals [ Ordered_port_connectionContextExt extendedContext ]
+	: attribute_instance* ( expression )?;
+
+named_port_connection
+locals [ Named_port_connectionContextExt extendedContext ]
+	: attribute_instance* DOT port_identifier ( LPAREN ( expression )? RPAREN )?
+	| attribute_instance*  DOTSTAR ;
+
+interface_instantiation
+locals [ Interface_instantiationContextExt extendedContext ]
+	: interface_identifier ( parameter_value_assignment )? hierarchical_instance ( COMMA hierarchical_instance )* SEMI;
+
+program_instantiation
+locals [ Program_instantiationContextExt extendedContext ]
+	: program_identifier ( parameter_value_assignment )? hierarchical_instance ( COMMA hierarchical_instance )* SEMI;
+
+checker_instantiation
+locals [ Checker_instantiationContextExt extendedContext ]
+	: checker_identifier name_of_instance LPAREN ( list_of_checker_port_connections )? RPAREN SEMI;
+
+list_of_checker_port_connections
+locals [ List_of_checker_port_connectionsContextExt extendedContext ]
+	: ordered_checker_port_connection ( COMMA ordered_checker_port_connection )*
+	| named_checker_port_connection ( COMMA named_checker_port_connection )*;
+
+ordered_checker_port_connection
+locals [ Ordered_checker_port_connectionContextExt extendedContext ]
+	: attribute_instance* ( property_actual_arg )?;
+
+named_checker_port_connection
+locals [ Named_checker_port_connectionContextExt extendedContext ]
+	: attribute_instance* DOT port_identifier ( LPAREN ( property_actual_arg )? RPAREN )?
+	| attribute_instance*  DOTSTAR ;
+
+generate_region
+locals [ Generate_regionContextExt extendedContext ]
+	:  GENERATESTR  ( generate_block )*  ENDGENERATESTR ;
+
+loop_generate_construct
+locals [ Loop_generate_constructContextExt extendedContext ]
+	:  FORSTR  LPAREN genvar_initialization SEMI genvar_expression SEMI genvar_iteration RPAREN generate_block;
+
+genvar_initialization
+locals [ Genvar_initializationContextExt extendedContext ]
+	: (  GENVARSTR  )? genvar_identifier ASSIGN constant_expression;
+
+conditional_generate_construct
+locals [ Conditional_generate_constructContextExt extendedContext ]
+	: if_generate_construct
+	| case_generate_construct;
+
+if_generate_construct
+locals [ If_generate_constructContextExt extendedContext ]
+	:  IFSTR  LPAREN constant_expression RPAREN generate_block (  ELSESTR  generate_block )?;
+
+case_generate_construct
+locals [ Case_generate_constructContextExt extendedContext ]
+	:  CASESTR  LPAREN constant_expression RPAREN case_generate_item ( case_generate_item )*  ENDCASESTR ;
+
+case_generate_item
+locals [ Case_generate_itemContextExt extendedContext ]
+	: constant_expression ( COMMA constant_expression )* COLON generate_block
+	|  DEFAULTSTR  ( COLON )? generate_block;
+
+generate_block
+locals [ Generate_blockContextExt extendedContext ]
+	: generate_item
+	| ( generate_block_identifier COLON )? generate_block_part1 generate_block_part3* generate_block_part2;
+
+generate_block_part1
+locals [ Generate_block_part1ContextExt extendedContext ]
+	:  BEGINSTR  ( COLON generate_block_identifier )?;
+
+generate_block_part2
+locals [ Generate_block_part2ContextExt extendedContext ]
+	:  ENDSTR  ( COLON generate_block_identifier )?;
+
+generate_block_part3
+locals [ Generate_block_part3ContextExt extendedContext ]
+	: generate_item
+	| generate_block;
+
+generate_item
+locals [ Generate_itemContextExt extendedContext ]
+	: module_or_generate_item
+	| interface_or_generate_item
+	| checker_or_generate_item;
+
+udp_nonansi_declaration
+locals [ Udp_nonansi_declarationContextExt extendedContext ]
+	: attribute_instance*  PRIMITIVESTR  udp_identifier LPAREN udp_port_list RPAREN SEMI;
+
+genvar_iteration
+locals [ Genvar_iterationContextExt extendedContext ]
+	: genvar_identifier assignment_operator genvar_expression
+	| inc_or_dec_operator genvar_identifier
+	| genvar_identifier inc_or_dec_operator;
+
+udp_ansi_declaration
+locals [ Udp_ansi_declarationContextExt extendedContext ]
+	: attribute_instance*  PRIMITIVESTR  udp_identifier LPAREN udp_declaration_port_list RPAREN SEMI;
+
+udp_declaration
+locals [ Udp_declarationContextExt extendedContext ]
+	: udp_nonansi_declaration udp_port_declaration ( udp_port_declaration )* udp_body  ENDPRIMITIVESTR  ( COLON udp_identifier )?
+	| udp_ansi_declaration udp_body  ENDPRIMITIVESTR  ( COLON udp_identifier )?
+	|  EXTERNSTR  udp_nonansi_declaration
+	|  EXTERNSTR  udp_ansi_declaration
+	| attribute_instance*  PRIMITIVESTR  udp_identifier LPAREN  DOTSTAR  RPAREN SEMI ( udp_port_declaration )* udp_body  ENDPRIMITIVESTR  ( COLON udp_identifier )?;
+
+udp_port_list
+locals [ Udp_port_listContextExt extendedContext ]
+	: output_port_identifier COMMA input_port_identifier ( COMMA input_port_identifier )*;
+
+udp_declaration_port_list
+locals [ Udp_declaration_port_listContextExt extendedContext ]
+	: udp_output_declaration COMMA udp_input_declaration ( COMMA udp_input_declaration )*;
+
+udp_port_declaration
+locals [ Udp_port_declarationContextExt extendedContext ]
+	: udp_output_declaration SEMI
+	| udp_input_declaration SEMI
+	| udp_reg_declaration SEMI;
+
+udp_output_declaration
+locals [ Udp_output_declarationContextExt extendedContext ]
+	: attribute_instance*  OUTPUTSTR  (  REGSTR  )? port_identifier ( ASSIGN constant_expression )?;
+
+udp_input_declaration
+locals [ Udp_input_declarationContextExt extendedContext ]
+	: attribute_instance*  INPUTSTR  list_of_udp_port_identifiers;
+
+udp_reg_declaration
+locals [ Udp_reg_declarationContextExt extendedContext ]
+	: attribute_instance*  REGSTR  variable_identifier;
+
+udp_body
+locals [ Udp_bodyContextExt extendedContext ]
+	: combinational_body
+	| sequential_body;
+
+combinational_body
+locals [ Combinational_bodyContextExt extendedContext ]
+	:  TABLESTR  combinational_entry ( combinational_entry )*  ENDTABLESTR ;
+
+combinational_entry
+locals [ Combinational_entryContextExt extendedContext ]
+	: level_input_list COLON output_symbol SEMI;
+
+sequential_body
+locals [ Sequential_bodyContextExt extendedContext ]
+	: ( udp_initial_statement )?  TABLESTR  sequential_entry ( sequential_entry )*  ENDTABLESTR ;
+
+udp_initial_statement
+locals [ Udp_initial_statementContextExt extendedContext ]
+	:  INITIALSTR  output_port_identifier ASSIGN init_val SEMI;
+
+init_val
+locals [ Init_valContextExt extendedContext ]
+	: Binary_number
+	| Zero_Or_One
+	| EDGE_SPEC;
+
+sequential_entry
+locals [ Sequential_entryContextExt extendedContext ]
+	: seq_input_list COLON current_state COLON next_state SEMI;
+
+seq_input_list
+locals [ Seq_input_listContextExt extendedContext ]
+	: level_input_list
+	| edge_input_list;
+
+level_input_list
+locals [ Level_input_listContextExt extendedContext ]
+	: level_symbol ( level_symbol )*;
+
+edge_input_list
+locals [ Edge_input_listContextExt extendedContext ]
+	: edge_input_list_part1 ( level_symbol )*;
+
+edge_input_list_part1
+locals [ Edge_input_list_part1ContextExt extendedContext ]
+	: ( level_symbol )* edge_indicator;
+
+edge_indicator
+locals [ Edge_indicatorContextExt extendedContext ]
+	: LPAREN level_symbol level_symbol RPAREN
+	| edge_symbol;
+
+current_state
+locals [ Current_stateContextExt extendedContext ]
+	: level_symbol;
+
+next_state
+locals [ Next_stateContextExt extendedContext ]
+	: output_symbol
+	|  MINUS ;
+
+output_symbol
+locals [ Output_symbolContextExt extendedContext ]
+	: Binary_number
+	| EDGE_SPEC
+	| Zero_Or_One;
+
+level_symbol
+locals [ Level_symbolContextExt extendedContext ]
+	: Binary_number
+	| EDGE_SPEC
+	| Zero_Or_One
+	|  QUESTINMARK 
+	| ID;
+
+edge_symbol
+locals [ Edge_symbolContextExt extendedContext ]
+	: ID
+	| STAR;
+
+udp_instantiation
+locals [ Udp_instantiationContextExt extendedContext ]
+	: udp_identifier ( drive_strength )? ( delay2 )? udp_instance ( COMMA udp_instance )* SEMI;
+
+udp_instance
+locals [ Udp_instanceContextExt extendedContext ]
+	: ( name_of_instance )? LPAREN output_terminal COMMA input_terminal ( COMMA input_terminal )* RPAREN;
+
+continuous_assign
+locals [ Continuous_assignContextExt extendedContext ]
+	:  ASSIGNSTRSTR  ( drive_strength )? ( delay3 )? ( list_of_net_assignments ) SEMI;
+
+list_of_net_assignments
+locals [ List_of_net_assignmentsContextExt extendedContext ]
+	: net_assignment ( COMMA net_assignment )*;
+
+list_of_variable_assignments
+locals [ List_of_variable_assignmentsContextExt extendedContext ]
+	: variable_assignment ( COMMA variable_assignment )*;
+
+net_alias
+locals [ Net_aliasContextExt extendedContext ]
+	:  ALIASSTR  net_lvalue ASSIGN net_lvalue ( ASSIGN net_lvalue )* SEMI;
+
+net_assignment
+locals [ Net_assignmentContextExt extendedContext ]
+	: net_lvalue ASSIGN expression;
+
+initial_construct
+locals [ Initial_constructContextExt extendedContext ]
+	:  INITIALSTR  statement_or_null;
+
+always_construct
+locals [ Always_constructContextExt extendedContext ]
+	: always_keyword statement;
+
+always_keyword
+locals [ Always_keywordContextExt extendedContext ]
+	:  ALWAYSSTR 
+	|  ALWAYS_COMBSTR 
+	|  ALWAYS_LATCHSTR 
+	|  ALWAYS_FFSTR ;
+
+final_construct
+locals [ Final_constructContextExt extendedContext ]
+	:  FINALSTR  function_statement;
+
+blocking_assignment
+locals [ Blocking_assignmentContextExt extendedContext ]
+	: variable_lvalue ASSIGN delay_or_event_control expression
+	| nonrange_variable_lvalue ASSIGN dynamic_array_new
+	| ( implicit_class_handle DOT | class_scope | package_scope )? hierarchical_variable_identifier select ASSIGN class_new
+	| operator_assignment;
+
+operator_assignment
+locals [ Operator_assignmentContextExt extendedContext ]
+	: variable_lvalue assignment_operator expression;
+
+assignment_operator
+locals [ Assignment_operatorContextExt extendedContext ]
+	: ASSIGN
+	|  PLUSEQUALS 
+	|  MINUSEQUALS 
+	|  STARTEQUALS 
+	|  SLASHEQUALS 
+	|  PERCENTILEEQUAL 
+	|  ANDEQUALS 
+	|  OREQUAL 
+	|  XOREQUAL 
+	|  LSHIFT_ASSIGN 
+	|  RSHIFT_ASSIGN 
+	|  UNSIGNED_LSHIFT_ASSIGN 
+	|  UNSIGNED_RSHIFT_ASSIGN ;
+
+nonblocking_assignment
+locals [ Nonblocking_assignmentContextExt extendedContext ]
+	: variable_lvalue  LE  ( delay_or_event_control )? expression;
+
+procedural_continuous_assignment
+locals [ Procedural_continuous_assignmentContextExt extendedContext ]
+	:  ASSIGNSTRSTR  variable_assignment
+	|  DEASSIGNSTR  variable_lvalue
+	|  FORCESTR  variable_assignment
+	|  FORCESTR  net_assignment
+	|  RELEASESTR  variable_lvalue
+	|  RELEASESTR  net_lvalue;
+
+action_block
+locals [ Action_blockContextExt extendedContext ]
+	: statement_or_null
+	| ( statement )?  ELSESTR  statement_or_null;
+
+seq_block
+locals [ Seq_blockContextExt extendedContext ]
+	: seq_block_part1 ( block_item_declaration )* ( statement_or_null )*  ENDSTR  ( COLON block_identifier )?;
+
+seq_block_part1
+locals [ Seq_block_part1ContextExt extendedContext ]
+	:  BEGINSTR  ( COLON block_identifier )?;
+
+par_block
+locals [ Par_blockContextExt extendedContext ]
+	: par_block_part1 ( block_item_declaration )* ( statement_or_null )* join_keyword ( COLON block_identifier )?;
+
+par_block_part1
+locals [ Par_block_part1ContextExt extendedContext ]
+	:  FORKSTR  ( COLON block_identifier )?;
+
+join_keyword
+locals [ Join_keywordContextExt extendedContext ]
+	:  JOINSTR 
+	|  JOIN_ANYSTR 
+	|  JOIN_NAMESTR ;
+
+statement_or_null
+locals [ Statement_or_nullContextExt extendedContext ]
+	: statement
+	| attribute_instance* SEMI;
+
+statement
+locals [ StatementContextExt extendedContext ]
+	: ( block_identifier COLON )? attribute_instance* statement_item;
+
+statement_item
+locals [ Statement_itemContextExt extendedContext ]
+	: blocking_assignment SEMI
+	| nonblocking_assignment SEMI
+	| procedural_continuous_assignment SEMI
+	| case_statement
+	| conditional_statement
+	| inc_or_dec_expression SEMI
+	| subroutine_call_statement
+	| disable_statement
+	| event_trigger
+	| loop_statement
+	| jump_statement
+	| par_block
+	| procedural_timing_control_statement
+	| seq_block
+	| wait_statement
+	| procedural_assertion_statement
+	| clocking_drive SEMI
+	| randsequence_statement
+	| randcase_statement
+	| expect_property_statement;
+
+function_statement
+locals [ Function_statementContextExt extendedContext ]
+	: statement;
+
+function_statement_or_null
+locals [ Function_statement_or_nullContextExt extendedContext ]
+	: function_statement
+	| attribute_instance* SEMI;
+
+variable_identifier_list
+locals [ Variable_identifier_listContextExt extendedContext ]
+	: variable_identifier ( COMMA variable_identifier )*;
+
+procedural_timing_control_statement
+locals [ Procedural_timing_control_statementContextExt extendedContext ]
+	: procedural_timing_control statement_or_null;
+
+delay_or_event_control
+locals [ Delay_or_event_controlContextExt extendedContext ]
+	: delay_control
+	| event_control
+	|  REPEATSTR  LPAREN expression RPAREN event_control;
+
+delay_control
+locals [ Delay_controlContextExt extendedContext ]
+	: HASH delay_value
+	| HASH LPAREN mintypmax_expression RPAREN;
+
+event_control
+locals [ Event_controlContextExt extendedContext ]
+	:  ATTHERATE  hierarchical_event_identifier
+	|  ATTHERATE  LPAREN event_expression RPAREN
+	|  ATTHERATESTAR 
+	|  ATTHERATE   LPARENSTARRPAREN 
+	|  ATTHERATE  ps_or_hierarchical_sequence_identifier;
+
+event_expression 
+locals [ Event_expressionContextExt extendedContext ]
+:
+	(( edge_identifier )? expression (  IFFSTR  expression )? | sequence_instance (  IFFSTR  expression )? | LPAREN event_expression RPAREN) ( ORSTR  event_expression | COMMA event_expression)*;
+
+procedural_timing_control
+locals [ Procedural_timing_controlContextExt extendedContext ]
+	: delay_control
+	| event_control
+	| cycle_delay;
+
+jump_statement
+locals [ Jump_statementContextExt extendedContext ]
+	:  RETURNSTR  ( expression )? SEMI
+	|  BREAKSTR  SEMI
+	|  CONTINUESTR  SEMI;
+
+wait_statement
+locals [ Wait_statementContextExt extendedContext ]
+	:  WAITSTR  LPAREN expression RPAREN statement_or_null
+	|  WAITSTR   FORKSTR  SEMI
+	|  WAIT_ORDERSTR  LPAREN hierarchical_identifier ( COMMA hierarchical_identifier )* RPAREN action_block;
+
+event_trigger
+locals [ Event_triggerContextExt extendedContext ]
+	:  DERIVE  hierarchical_event_identifier SEMI
+	|  DERIVEGT  ( delay_or_event_control )? hierarchical_event_identifier SEMI;
+
+disable_statement
+locals [ Disable_statementContextExt extendedContext ]
+	:  DISABLESTR  hierarchical_task_identifier SEMI
+	|  DISABLESTR  hierarchical_block_identifier SEMI
+	|  DISABLESTR   FORKSTR  SEMI;
+
+conditional_statement
+locals [ Conditional_statementContextExt extendedContext ]
+	: ( unique_priority )?  IFSTR  LPAREN expression RPAREN statement_or_null (  ELSESTR   IFSTR  LPAREN expression RPAREN statement_or_null )* (  ELSESTR  statement_or_null )?;
+
+unique_priority
+locals [ Unique_priorityContextExt extendedContext ]
+	:  UNIQUESTR 
+	|  UNIQUE0STR 
+	|  PRIORITYSTR ;
+
+case_statement
+locals [ Case_statementContextExt extendedContext ]
+	: ( unique_priority )? case_keyword LPAREN case_expression RPAREN case_item ( case_item )*  ENDCASESTR 
+	| ( unique_priority )? case_keyword LPAREN case_expression RPAREN  MATCHESSTR  case_pattern_item ( case_pattern_item )*  ENDCASESTR 
+	| ( unique_priority )?  CASESTR  LPAREN case_expression RPAREN  INSIDESTR  case_inside_item ( case_inside_item )*  ENDCASESTR ;
+
+case_keyword
+locals [ Case_keywordContextExt extendedContext ]
+	:  CASESTR 
+	|  CASEZSTR 
+	|  CASEXSTR ;
+
+case_expression
+locals [ Case_expressionContextExt extendedContext ]
+	: expression;
+
+case_item
+locals [ Case_itemContextExt extendedContext ]
+	: case_item_expression ( COMMA case_item_expression )* COLON statement_or_null
+	|  DEFAULTSTR  ( COLON )? statement_or_null;
+
+case_pattern_item
+locals [ Case_pattern_itemContextExt extendedContext ]
+	: pattern (  ANDANDAND  expression )? COLON statement_or_null
+	|  DEFAULTSTR  ( COLON )? statement_or_null;
+
+case_inside_item
+locals [ Case_inside_itemContextExt extendedContext ]
+	: open_range_list COLON statement_or_null
+	|  DEFAULTSTR  ( COLON )? statement_or_null;
+
+case_item_expression
+locals [ Case_item_expressionContextExt extendedContext ]
+	: expression;
+
+randcase_statement
+locals [ Randcase_statementContextExt extendedContext ]
+	:  RANDCASESTR  randcase_item ( randcase_item )*  ENDCASESTR ;
+
+randcase_item
+locals [ Randcase_itemContextExt extendedContext ]
+	: expression COLON statement_or_null;
+
+pattern
+locals [ PatternContextExt extendedContext ]
+	: DOT variable_identifier
+	|  DOTSTAR 
+	| constant_expression
+	|  TAGGEDSTR  member_identifier ( pattern )?
+	|  ESCAPELCURL  pattern ( COMMA pattern )* RCURL
+	|  ESCAPELCURL  member_identifier COLON pattern ( COMMA member_identifier COLON pattern )* RCURL;
+
+assignment_pattern
+locals [ Assignment_patternContextExt extendedContext ]
+	:  ESCAPELCURL  expression ( COMMA expression )* RCURL
+	|  ESCAPELCURL  structure_pattern_key COLON expression ( COMMA structure_pattern_key COLON expression )* RCURL
+	|  ESCAPELCURL  array_pattern_key COLON expression ( COMMA array_pattern_key COLON expression )* RCURL
+	|  ESCAPELCURL  constant_expression LCURL expression ( COMMA expression )* RCURL RCURL;
+
+structure_pattern_key
+locals [ Structure_pattern_keyContextExt extendedContext ]
+	: member_identifier
+	| assignment_pattern_key;
+
+array_pattern_key
+locals [ Array_pattern_keyContextExt extendedContext ]
+	: constant_expression
+	| assignment_pattern_key;
+
+assignment_pattern_key
+locals [ Assignment_pattern_keyContextExt extendedContext ]
+	: simple_type
+	|  DEFAULTSTR ;
+
+variable_assignment
+locals [ Variable_assignmentContextExt extendedContext ]
+	: variable_lvalue ASSIGN expression;
+
+assignment_pattern_expression
+locals [ Assignment_pattern_expressionContextExt extendedContext ]
+	: ( assignment_pattern_expression_type )? assignment_pattern;
+
+assignment_pattern_expression_type
+locals [ Assignment_pattern_expression_typeContextExt extendedContext ]
+	: ps_type_identifier
+	| ps_parameter_identifier
+	| integer_atom_type
+	| type_reference;
+
+constant_assignment_pattern_expression
+locals [ Constant_assignment_pattern_expressionContextExt extendedContext ]
+	: assignment_pattern_expression;
+
+assignment_pattern_net_lvalue
+locals [ Assignment_pattern_net_lvalueContextExt extendedContext ]
+	:  ESCAPELCURL  net_lvalue ( COMMA net_lvalue )* RCURL;
+
+assignment_pattern_variable_lvalue
+locals [ Assignment_pattern_variable_lvalueContextExt extendedContext ]
+	:  ESCAPELCURL  variable_lvalue ( COMMA variable_lvalue )* RCURL;
+
+loop_statement
+locals [ Loop_statementContextExt extendedContext ]
+	:  FOREVERSTR  statement_or_null
+	|  REPEATSTR  LPAREN expression RPAREN statement_or_null
+	|  WHILESTR  LPAREN expression RPAREN statement_or_null
+	|  FORSTR  LPAREN for_initialization SEMI expression SEMI for_step RPAREN statement_or_null
+	|  DOSTR  statement_or_null  WHILESTR  LPAREN expression RPAREN SEMI
+	|  FOREACHSTR  LPAREN ps_or_hierarchical_array_identifier ( loop_variables )? RPAREN statement;
+
+for_initialization
+locals [ For_initializationContextExt extendedContext ]
+	: list_of_variable_assignments
+	| for_variable_declaration ( COMMA for_variable_declaration )*;
+
+for_variable_declaration
+locals [ For_variable_declarationContextExt extendedContext ]
+	: data_type variable_identifier ASSIGN expression ( COMMA variable_identifier ASSIGN expression )*;
+
+for_step
+locals [ For_stepContextExt extendedContext ]
+	: for_step_assignment ( COMMA for_step_assignment )*;
+
+for_step_assignment
+locals [ For_step_assignmentContextExt extendedContext ]
+	: operator_assignment
+	| inc_or_dec_expression
+	| function_subroutine_call;
+
+loop_variables
+locals [ Loop_variablesContextExt extendedContext ]
+	: ( index_variable_identifier )? loop_variables_part1*;
+
+loop_variables_part1
+locals [ Loop_variables_part1ContextExt extendedContext ]
+	: COMMA ( index_variable_identifier )?;
+
+subroutine_call_statement
+locals [ Subroutine_call_statementContextExt extendedContext ]
+	: subroutine_call SEMI
+	|  VOIDSTR   ESCAPEQUOTE  LPAREN function_subroutine_call RPAREN SEMI;
+
+assertion_item
+locals [ Assertion_itemContextExt extendedContext ]
+	: concurrent_assertion_item
+	| deferred_immediate_assertion_item;
+
+deferred_immediate_assertion_item
+locals [ Deferred_immediate_assertion_itemContextExt extendedContext ]
+	: ( block_identifier COLON )? deferred_immediate_assertion_statement;
+
+procedural_assertion_statement
+locals [ Procedural_assertion_statementContextExt extendedContext ]
+	: concurrent_assertion_statement
+	| immediate_assertion_statement
+	| checker_instantiation;
+
+immediate_assertion_statement
+locals [ Immediate_assertion_statementContextExt extendedContext ]
+	: simple_immediate_assertion_statement
+	| deferred_immediate_assertion_statement;
+
+simple_immediate_assertion_statement
+locals [ Simple_immediate_assertion_statementContextExt extendedContext ]
+	: simple_immediate_assert_statement
+	| simple_immediate_assume_statement
+	| simple_immediate_cover_statement;
+
+simple_immediate_assert_statement
+locals [ Simple_immediate_assert_statementContextExt extendedContext ]
+	:  ASSERTSTR  LPAREN expression RPAREN action_block;
+
+simple_immediate_assume_statement
+locals [ Simple_immediate_assume_statementContextExt extendedContext ]
+	:  ASSUMESTR  LPAREN expression RPAREN action_block;
+
+simple_immediate_cover_statement
+locals [ Simple_immediate_cover_statementContextExt extendedContext ]
+	:  COVERSTR  LPAREN expression RPAREN statement_or_null;
+
+deferred_immediate_assertion_statement
+locals [ Deferred_immediate_assertion_statementContextExt extendedContext ]
+	: deferred_immediate_assert_statement
+	| deferred_immediate_assume_statement
+	| deferred_immediate_cover_statement;
+
+deferred_immediate_assert_statement
+locals [ Deferred_immediate_assert_statementContextExt extendedContext ]
+	:  ASSERTSTR  HASH_ZERO LPAREN expression RPAREN action_block;
+
+deferred_immediate_assume_statement
+locals [ Deferred_immediate_assume_statementContextExt extendedContext ]
+	:  ASSUMESTR  HASH_ZERO LPAREN expression RPAREN action_block;
+
+deferred_immediate_cover_statement
+locals [ Deferred_immediate_cover_statementContextExt extendedContext ]
+	:  COVERSTR  HASH_ZERO LPAREN expression RPAREN action_block statement_or_null;
+
+clocking_declaration
+locals [ Clocking_declarationContextExt extendedContext ]
+	: (  DEFAULTSTR  )? clocking_declaration_part1 clocking_event SEMI ( clocking_item )*  ENDCLOCKINGSTR  ( COLON clocking_identifier )?
+	|  GLOBALSTR  clocking_declaration_part1 clocking_event SEMI  ENDCLOCKINGSTR  ( COLON clocking_identifier )?;
+
+clocking_declaration_part1
+locals [ Clocking_declaration_part1ContextExt extendedContext ]
+	:  CLOCKINGSTR  ( clocking_identifier )?;
+
+clocking_event
+locals [ Clocking_eventContextExt extendedContext ]
+	:  ATTHERATE  identifier
+	|  ATTHERATE  LPAREN event_expression RPAREN;
+
+clocking_item
+locals [ Clocking_itemContextExt extendedContext ]
+	:  DEFAULTSTR  default_skew SEMI
+	| clocking_direction list_of_clocking_decl_assign SEMI
+	| attribute_instance* assertion_item_declaration;
+
+default_skew
+locals [ Default_skewContextExt extendedContext ]
+	:  INPUTSTR  clocking_skew
+	|  OUTPUTSTR  clocking_skew
+	|  INPUTSTR  clocking_skew  OUTPUTSTR  clocking_skew;
+
+clocking_direction
+locals [ Clocking_directionContextExt extendedContext ]
+	:  INPUTSTR  ( clocking_skew )?
+	| clocking_direction_part1
+	|  INPUTSTR  ( clocking_skew )? clocking_direction_part1
+	|  INOUTSTR ;
+
+clocking_direction_part1
+locals [ Clocking_direction_part1ContextExt extendedContext ]
+	:  OUTPUTSTR  ( clocking_skew )?;
+
+list_of_clocking_decl_assign
+locals [ List_of_clocking_decl_assignContextExt extendedContext ]
+	: clocking_decl_assign ( COMMA clocking_decl_assign )*;
+
+clocking_decl_assign
+locals [ Clocking_decl_assignContextExt extendedContext ]
+	: signal_identifier ( ASSIGN expression )?;
+
+clocking_skew
+locals [ Clocking_skewContextExt extendedContext ]
+	: edge_identifier ( delay_control )?
+	| delay_control;
+
+clocking_drive
+locals [ Clocking_driveContextExt extendedContext ]
+	: clockvar_expression  LE  ( cycle_delay )? expression;
+
+cycle_delay
+locals [ Cycle_delayContextExt extendedContext ]
+	: DOUBLE_HASH ( Zero_Or_One | EDGE_SPEC | Decimal_number )
+	| DOUBLE_HASH identifier
+	| DOUBLE_HASH LPAREN expression RPAREN;
+
+clockvar
+locals [ ClockvarContextExt extendedContext ]
+	: hierarchical_identifier;
+
+clockvar_expression
+locals [ Clockvar_expressionContextExt extendedContext ]
+	: clockvar select;
+
+randsequence_statement
+locals [ Randsequence_statementContextExt extendedContext ]
+	:  RANDSEQUENCESTR  LPAREN ( production_identifier )? RPAREN production ( production )*  ENDSEQUENCESTR ;
+
+production
+locals [ ProductionContextExt extendedContext ]
+	: ( data_type_or_void )? production_identifier ( LPAREN tf_port_list RPAREN )? COLON rs_rule (  OR  rs_rule )* SEMI;
+
+rs_rule
+locals [ Rs_ruleContextExt extendedContext ]
+	: rs_production_list (  COLONEQUALS  weight_specification ( rs_code_block )? )?;
+
+rs_production_list
+locals [ Rs_production_listContextExt extendedContext ]
+	: rs_prod ( rs_prod )*
+	|  RANDSTR   JOINSTR  ( LPAREN expression RPAREN )? production_item production_item ( production_item )*;
+
+weight_specification
+locals [ Weight_specificationContextExt extendedContext ]
+	: ( Zero_Or_One | EDGE_SPEC | Decimal_number )
+	| ps_identifier
+	| LPAREN expression RPAREN;
+
+rs_code_block
+locals [ Rs_code_blockContextExt extendedContext ]
+	: LCURL ( data_declaration )* ( statement_or_null )* RCURL;
+
+rs_prod
+locals [ Rs_prodContextExt extendedContext ]
+	: production_item
+	| rs_code_block
+	| rs_if_else
+	| rs_repeat
+	| rs_case;
+
+production_item
+locals [ Production_itemContextExt extendedContext ]
+	: production_identifier ( LPAREN list_of_arguments RPAREN )?;
+
+rs_if_else
+locals [ Rs_if_elseContextExt extendedContext ]
+	:  IFSTR  LPAREN expression RPAREN production_item (  ELSESTR  production_item )?;
+
+rs_repeat
+locals [ Rs_repeatContextExt extendedContext ]
+	:  REPEATSTR  LPAREN expression RPAREN production_item;
+
+rs_case
+locals [ Rs_caseContextExt extendedContext ]
+	:  CASESTR  LPAREN case_expression RPAREN rs_case_item ( rs_case_item )*  ENDCASESTR ;
+
+rs_case_item
+locals [ Rs_case_itemContextExt extendedContext ]
+	: case_item_expression ( COMMA case_item_expression )* COLON production_item SEMI
+	|  DEFAULTSTR  ( COLON )? production_item SEMI;
+
+specify_block
+locals [ Specify_blockContextExt extendedContext ]
+	:  SPECIFYSTR  specify_item*  ENDSPECIFYSTR ;
+
+specify_item
+locals [ Specify_itemContextExt extendedContext ]
+	: specparam_declaration
+	| pulsestyle_declaration
+	| showcancelled_declaration
+	| path_declaration
+	| system_timing_check;
+
+pulsestyle_declaration
+locals [ Pulsestyle_declarationContextExt extendedContext ]
+	:  PULSESTYLE_ONEVENTSTR  list_of_path_outputs SEMI
+	|  PULSESTYLE_ONDETECTSTR  list_of_path_outputs SEMI;
+
+showcancelled_declaration
+locals [ Showcancelled_declarationContextExt extendedContext ]
+	:  SHOWCANCELLEDSTR  list_of_path_outputs SEMI
+	|  NOSHOWCANCELLEDSTR  list_of_path_outputs SEMI;
+
+path_declaration
+locals [ Path_declarationContextExt extendedContext ]
+	: simple_path_declaration SEMI
+	| edge_sensitive_path_declaration SEMI
+	| state_dependent_path_declaration SEMI;
+
+simple_path_declaration
+locals [ Simple_path_declarationContextExt extendedContext ]
+	: parallel_path_description ASSIGN path_delay_value
+	| full_path_description ASSIGN path_delay_value;
+
+parallel_path_description
+locals [ Parallel_path_descriptionContextExt extendedContext ]
+	: LPAREN specify_input_terminal_descriptor polarity_operator?  IMPLIES  specify_output_terminal_descriptor RPAREN;
+
+full_path_description
+locals [ Full_path_descriptionContextExt extendedContext ]
+	: LPAREN list_of_path_inputs polarity_operator?  STARGT  list_of_path_outputs RPAREN;
+
+list_of_path_inputs
+locals [ List_of_path_inputsContextExt extendedContext ]
+	: specify_input_terminal_descriptor ( COMMA specify_input_terminal_descriptor )*;
+
+list_of_path_outputs
+locals [ List_of_path_outputsContextExt extendedContext ]
+	: specify_output_terminal_descriptor ( COMMA specify_output_terminal_descriptor )*;
+
+specify_input_terminal_descriptor
+locals [ Specify_input_terminal_descriptorContextExt extendedContext ]
+	: input_identifier ( LBRACK constant_range_expression RBRACK )?;
+
+specify_output_terminal_descriptor
+locals [ Specify_output_terminal_descriptorContextExt extendedContext ]
+	: output_identifier ( LBRACK constant_range_expression RBRACK )?;
+
+input_identifier
+locals [ Input_identifierContextExt extendedContext ]
+	: input_port_identifier
+	| inout_port_identifier
+	| interface_identifier DOT port_identifier;
+
+output_identifier
+locals [ Output_identifierContextExt extendedContext ]
+	: output_port_identifier
+	| inout_port_identifier
+	| interface_identifier DOT port_identifier;
+
+path_delay_value
+locals [ Path_delay_valueContextExt extendedContext ]
+	: list_of_path_delay_expressions
+	| LPAREN list_of_path_delay_expressions RPAREN;
+
+list_of_path_delay_expressions
+locals [ List_of_path_delay_expressionsContextExt extendedContext ]
+	: t_path_delay_expression
+	| trise_path_delay_expression COMMA tfall_path_delay_expression
+	| trise_path_delay_expression COMMA tfall_path_delay_expression COMMA tz_path_delay_expression
+	| t01_path_delay_expression COMMA t10_path_delay_expression COMMA t0z_path_delay_expression COMMA tz1_path_delay_expression COMMA t1z_path_delay_expression COMMA tz0_path_delay_expression
+	| t01_path_delay_expression COMMA t10_path_delay_expression COMMA t0z_path_delay_expression COMMA tz1_path_delay_expression COMMA t1z_path_delay_expression COMMA tz0_path_delay_expression COMMA t0x_path_delay_expression COMMA tx1_path_delay_expression COMMA t1x_path_delay_expression COMMA tx0_path_delay_expression COMMA txz_path_delay_expression COMMA tzx_path_delay_expression;
+
+t_path_delay_expression
+locals [ T_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+trise_path_delay_expression
+locals [ Trise_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tfall_path_delay_expression
+locals [ Tfall_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tz_path_delay_expression
+locals [ Tz_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t01_path_delay_expression
+locals [ T01_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t10_path_delay_expression
+locals [ T10_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t0z_path_delay_expression
+locals [ T0z_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tz1_path_delay_expression
+locals [ Tz1_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t1z_path_delay_expression
+locals [ T1z_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tz0_path_delay_expression
+locals [ Tz0_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t0x_path_delay_expression
+locals [ T0x_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tx1_path_delay_expression
+locals [ Tx1_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+t1x_path_delay_expression
+locals [ T1x_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tx0_path_delay_expression
+locals [ Tx0_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+txz_path_delay_expression
+locals [ Txz_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+tzx_path_delay_expression
+locals [ Tzx_path_delay_expressionContextExt extendedContext ]
+	: path_delay_expression;
+
+path_delay_expression
+locals [ Path_delay_expressionContextExt extendedContext ]
+	: constant_mintypmax_expression;
+
+edge_sensitive_path_declaration
+locals [ Edge_sensitive_path_declarationContextExt extendedContext ]
+	: parallel_edge_sensitive_path_description ASSIGN path_delay_value
+	| full_edge_sensitive_path_description ASSIGN path_delay_value;
+
+parallel_edge_sensitive_path_description
+locals [ Parallel_edge_sensitive_path_descriptionContextExt extendedContext ]
+	: LPAREN edge_identifier? specify_input_terminal_descriptor  IMPLIES  LPAREN specify_output_terminal_descriptor polarity_operator? COLON data_source_expression RPAREN RPAREN;
+
+full_edge_sensitive_path_description
+locals [ Full_edge_sensitive_path_descriptionContextExt extendedContext ]
+	: LPAREN edge_identifier? list_of_path_inputs  STARGT  LPAREN list_of_path_outputs polarity_operator? COLON data_source_expression RPAREN RPAREN;
+
+data_source_expression
+locals [ Data_source_expressionContextExt extendedContext ]
+	: expression;
+
+edge_identifier
+locals [ Edge_identifierContextExt extendedContext ]
+	:  POSEDGESTR 
+	|  NEGEDGESTR 
+	|  EDGESTR ;
+
+state_dependent_path_declaration
+locals [ State_dependent_path_declarationContextExt extendedContext ]
+	:  IFSTR  LPAREN module_path_expression RPAREN simple_path_declaration
+	|  IFSTR  LPAREN module_path_expression RPAREN edge_sensitive_path_declaration
+	|  IFNONESTR  simple_path_declaration;
+
+polarity_operator
+locals [ Polarity_operatorContextExt extendedContext ]
+	:  PLUS 
+	|  MINUS ;
+
+system_timing_check
+locals [ System_timing_checkContextExt extendedContext ]
+	: setup_timing_check
+	| hold_timing_check
+	| setuphold_timing_check
+	| recovery_timing_check
+	| removal_timing_check
+	| recrem_timing_check
+	| skew_timing_check
+	| timeskew_timing_check
+	| fullskew_timing_check
+	| period_timing_check
+	| width_timing_check
+	| nochange_timing_check;
+
+setup_timing_check
+locals [ Setup_timing_checkContextExt extendedContext ]
+	:  DOLLARSETUPSTR  LPAREN data_event COMMA reference_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+hold_timing_check
+locals [ Hold_timing_checkContextExt extendedContext ]
+	:  DOLLARHOLDSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+setuphold_timing_check
+locals [ Setuphold_timing_checkContextExt extendedContext ]
+	:  DOLLARSETUPHOLDSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit ( COMMA notifier? ( COMMA timestamp_condition? ( COMMA timecheck_condition? ( COMMA delayed_reference? ( COMMA delayed_data? )? )? )? )? )? RPAREN SEMI;
+
+recovery_timing_check
+locals [ Recovery_timing_checkContextExt extendedContext ]
+	:  DOLLARRECOVERYSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+removal_timing_check
+locals [ Removal_timing_checkContextExt extendedContext ]
+	:  DOLLARREMOVALSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+recrem_timing_check
+locals [ Recrem_timing_checkContextExt extendedContext ]
+	:  DOLLARRECREMSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit ( COMMA notifier? ( COMMA timestamp_condition? ( COMMA timecheck_condition? ( COMMA delayed_reference? ( COMMA delayed_data? )? )? )? )? )? RPAREN SEMI;
+
+skew_timing_check
+locals [ Skew_timing_checkContextExt extendedContext ]
+	:  DOLLARSKEWSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+timeskew_timing_check
+locals [ Timeskew_timing_checkContextExt extendedContext ]
+	:  DOLLARTIMESKEWSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit ( COMMA notifier? ( COMMA event_based_flag? ( COMMA remain_active_flag? )? )? )? RPAREN SEMI;
+
+fullskew_timing_check
+locals [ Fullskew_timing_checkContextExt extendedContext ]
+	:  DOLLARFULLSKEWSTR  LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit ( COMMA notifier ( COMMA event_based_flag ( COMMA remain_active_flag )? )? )? RPAREN SEMI;
+
+period_timing_check
+locals [ Period_timing_checkContextExt extendedContext ]
+	:  DOLLARPERIODSTR  LPAREN controlled_reference_event COMMA timing_check_limit ( COMMA notifier )? RPAREN SEMI;
+
+width_timing_check
+locals [ Width_timing_checkContextExt extendedContext ]
+	:  DOLLAEWIDTHSTR  LPAREN controlled_reference_event COMMA timing_check_limit COMMA threshold ( COMMA notifier )? RPAREN SEMI;
+
+nochange_timing_check
+locals [ Nochange_timing_checkContextExt extendedContext ]
+	:  DOLLARNOCHANGESTR  LPAREN reference_event COMMA data_event COMMA start_edge_offset COMMA end_edge_offset ( COMMA notifier )? RPAREN SEMI;
+
+timecheck_condition
+locals [ Timecheck_conditionContextExt extendedContext ]
+	: mintypmax_expression;
+
+controlled_reference_event
+locals [ Controlled_reference_eventContextExt extendedContext ]
+	: controlled_timing_check_event;
+
+data_event
+locals [ Data_eventContextExt extendedContext ]
+	: timing_check_event;
+
+delayed_data
+locals [ Delayed_dataContextExt extendedContext ]
+	: terminal_identifier
+	| terminal_identifier LBRACK constant_mintypmax_expression RBRACK;
+
+delayed_reference
+locals [ Delayed_referenceContextExt extendedContext ]
+	: terminal_identifier
+	| terminal_identifier LBRACK constant_mintypmax_expression RBRACK;
+
+end_edge_offset
+locals [ End_edge_offsetContextExt extendedContext ]
+	: mintypmax_expression;
+
+event_based_flag
+locals [ Event_based_flagContextExt extendedContext ]
+	: constant_expression;
+
+notifier
+locals [ NotifierContextExt extendedContext ]
+	: variable_identifier;
+
+reference_event
+locals [ Reference_eventContextExt extendedContext ]
+	: timing_check_event;
+
+remain_active_flag
+locals [ Remain_active_flagContextExt extendedContext ]
+	: constant_mintypmax_expression;
+
+timestamp_condition
+locals [ Timestamp_conditionContextExt extendedContext ]
+	: mintypmax_expression;
+
+start_edge_offset
+locals [ Start_edge_offsetContextExt extendedContext ]
+	: mintypmax_expression;
+
+threshold
+locals [ ThresholdContextExt extendedContext ]
+	: constant_expression;
+
+timing_check_limit
+locals [ Timing_check_limitContextExt extendedContext ]
+	: expression;
+
+timing_check_event
+locals [ Timing_check_eventContextExt extendedContext ]
+	: timing_check_event_control? specify_terminal_descriptor (  ANDANDAND  timing_check_condition )?;
+
+controlled_timing_check_event
+locals [ Controlled_timing_check_eventContextExt extendedContext ]
+	: timing_check_event_control specify_terminal_descriptor (  ANDANDAND  timing_check_condition )?;
+
+timing_check_event_control
+locals [ Timing_check_event_controlContextExt extendedContext ]
+	:  POSEDGESTR 
+	|  NEGEDGESTR 
+	|  EDGESTR 
+	| edge_control_specifier;
+
+specify_terminal_descriptor
+locals [ Specify_terminal_descriptorContextExt extendedContext ]
+	: specify_input_terminal_descriptor
+	| specify_output_terminal_descriptor;
+
+edge_control_specifier
+locals [ Edge_control_specifierContextExt extendedContext ]
+	:  EDGESTR  LBRACK edge_descriptor ( COMMA edge_descriptor )* RBRACK;
+
+edge_descriptor
+locals [ Edge_descriptorContextExt extendedContext ]
+	: EDGE_SPEC
+	| Z_or_X Zero_Or_One
+	| Zero_Or_One Z_or_X;
+
+timing_check_condition
+locals [ Timing_check_conditionContextExt extendedContext ]
+	: scalar_timing_check_condition
+	| LPAREN scalar_timing_check_condition RPAREN;
+
+scalar_timing_check_condition
+locals [ Scalar_timing_check_conditionContextExt extendedContext ]
+	: expression
+	| COMPLIMENT expression
+	| expression EQUALS scalar_constant
+	| expression CASE_EQUALITY scalar_constant
+	| expression NOT_EQUALS scalar_constant
+	| expression CASE_INEQUALITY scalar_constant;
+
+scalar_constant
+locals [ Scalar_constantContextExt extendedContext ]
+	: Binary_number
+	| EDGE_SPEC
+	| Zero_Or_One;
+
+concatenation
+locals [ ConcatenationContextExt extendedContext ]
+	: LCURL expression ( COMMA expression )* RCURL;
+
+constant_concatenation
+locals [ Constant_concatenationContextExt extendedContext ]
+	: LCURL constant_expression ( COMMA constant_expression )* RCURL;
+
+constant_multiple_concatenation
+locals [ Constant_multiple_concatenationContextExt extendedContext ]
+	: LCURL constant_expression constant_concatenation RCURL;
+
+module_path_concatenation
+locals [ Module_path_concatenationContextExt extendedContext ]
+	: LCURL module_path_expression ( COMMA module_path_expression )* RCURL;
+
+module_path_multiple_concatenation
+locals [ Module_path_multiple_concatenationContextExt extendedContext ]
+	: LCURL constant_expression module_path_concatenation RCURL;
+
+multiple_concatenation
+locals [ Multiple_concatenationContextExt extendedContext ]
+	: LCURL expression concatenation RCURL;
+
+streaming_concatenation
+locals [ Streaming_concatenationContextExt extendedContext ]
+	: LCURL stream_operator slice_size? stream_concatenation RCURL;
+
+stream_operator
+locals [ Stream_operatorContextExt extendedContext ]
+	: RSHIFT
+	| LSHIFT;
+
+slice_size
+locals [ Slice_sizeContextExt extendedContext ]
+	: simple_type
+	| constant_expression;
+
+stream_concatenation
+locals [ Stream_concatenationContextExt extendedContext ]
+	: LCURL stream_expression ( COMMA stream_expression )* RCURL;
+
+stream_expression
+locals [ Stream_expressionContextExt extendedContext ]
+	: expression (  WITHSTR  LBRACK array_range_expression RBRACK )?;
+
+array_range_expression
+locals [ Array_range_expressionContextExt extendedContext ]
+	: expression
+	| expression COLON expression
+	| expression  PLUSCOLON  expression
+	| expression  MINUSCOLON  expression;
+
+empty_queue
+locals [ Empty_queueContextExt extendedContext ]
+	: LCURL RCURL;
+
+constant_function_call
+locals [ Constant_function_callContextExt extendedContext ]
+	: function_subroutine_call;
+
+tf_call
+locals [ Tf_callContextExt extendedContext ]
+	: ps_or_hierarchical_tf_identifier attribute_instance? ( LPAREN list_of_arguments RPAREN )?;
+
+system_tf_call
+locals [ System_tf_callContextExt extendedContext ]
+	: system_tf_identifier ( LPAREN list_of_arguments RPAREN )?
+	| system_tf_identifier LPAREN data_type ( COMMA expression )? RPAREN;
+
+subroutine_call
+locals [ Subroutine_callContextExt extendedContext ]
+	: tf_call
+	| system_tf_call
+	| method_call
+	| (  STDCOLONCOLON  )? randomize_call;
+
+function_subroutine_call
+locals [ Function_subroutine_callContextExt extendedContext ]
+	: subroutine_call;
+
+list_of_arguments
+locals [ List_of_argumentsContextExt extendedContext ]
+	: expression? list_of_arguments_part1* ( COMMA list_of_arguments_part2 )*
+	| list_of_arguments_part2 ( COMMA list_of_arguments_part2 )*;
+
+list_of_arguments_part1
+locals [ List_of_arguments_part1ContextExt extendedContext ]
+	: COMMA expression?;
+
+list_of_arguments_part2
+locals [ List_of_arguments_part2ContextExt extendedContext ]
+	: DOT identifier LPAREN expression? RPAREN;
+
+method_call
+locals [ Method_callContextExt extendedContext ]
+	: method_call_root DOT method_call_body;
+
+method_call_body
+locals [ Method_call_bodyContextExt extendedContext ]
+	: method_identifier attribute_instance? ( LPAREN list_of_arguments RPAREN )?
+	| built_in_method_call;
+
+built_in_method_call
+locals [ Built_in_method_callContextExt extendedContext ]
+	: array_manipulation_call
+	| randomize_call;
+
+array_manipulation_call
+locals [ Array_manipulation_callContextExt extendedContext ]
+	: array_method_name attribute_instance? ( LPAREN list_of_arguments RPAREN )? (  WITHSTR  LPAREN expression RPAREN )?;
+
+randomize_call
+locals [ Randomize_callContextExt extendedContext ]
+	:  RANDOMIZESTR  attribute_instance? ( LPAREN ( variable_identifier_list |  NULLSTR  )? RPAREN )? (  WITHSTR  ( LPAREN identifier_list? RPAREN )? constraint_block )?;
+
+method_call_root
+locals [ Method_call_rootContextExt extendedContext ]
+	: primary_no_function_call
+	| implicit_class_handle;
+
+array_method_name
+locals [ Array_method_nameContextExt extendedContext ]
+	: method_identifier
+	|  UNIQUESTR 
+	|  ANDSTR 
+	|  ORSTR 
+	|  XORSTRSTR ;
+
+inc_or_dec_expression
+locals [ Inc_or_dec_expressionContextExt extendedContext ]
+	: inc_or_dec_expression_part1 variable_lvalue
+	| inc_or_dec_expression_part2 inc_or_dec_operator;
+
+inc_or_dec_expression_part1
+locals [ Inc_or_dec_expression_part1ContextExt extendedContext ]
+	: inc_or_dec_operator attribute_instance?;
+
+inc_or_dec_expression_part2
+locals [ Inc_or_dec_expression_part2ContextExt extendedContext ]
+	: variable_lvalue attribute_instance?;
+
+constant_expression
+locals [ Constant_expressionContextExt extendedContext ]
+	: constant_primary		#const_expr_only_primary
+	| unary_operator attribute_instance* constant_primary		#const_expr_unary_op
+	| constant_expression STARSTAR attribute_instance* constant_expression		#const_expr_st_st
+	| constant_expression ( STAR | DIV | MODULO ) attribute_instance* constant_expression		#const_expr_mutl
+	| constant_expression ( PLUS | MINUS ) attribute_instance* constant_expression		#const_expr_add
+	| constant_expression ( LSHIFT | RSHIFT | ALSHIFT | ARSHIFT ) attribute_instance* constant_expression		#const_expr_shift
+	| <assoc=right> constant_expression ( LT | GT | LE | GE ) attribute_instance* constant_expression		#const_expr_comp
+	| constant_expression ( EQUALS | NOT_EQUALS | CASE_EQUALITY | CASE_INEQUALITY | CASE_Q | NOT_CASE_Q ) attribute_instance* constant_expression		#const_expr_equality
+	| constant_expression ( AND ) attribute_instance* constant_expression		#const_expr_binary_and
+	| constant_expression ( XOR | XNOR | XORN ) attribute_instance* constant_expression		#const_expr_binary_xor
+	| constant_expression ( OR ) attribute_instance* constant_expression		#const_expr_binary_or
+	| constant_expression ( LOG_AND ) attribute_instance* constant_expression		#const_expr_log_and
+	| constant_expression ( LOG_OR ) attribute_instance* constant_expression		#const_expr_log_or
+	| <assoc=right> constant_expression  QUESTINMARK  attribute_instance* constant_expression COLON constant_expression		#const_expr_conditional;
+
+constant_mintypmax_expression
+locals [ Constant_mintypmax_expressionContextExt extendedContext ]
+	: constant_expression
+	| constant_expression COLON constant_expression COLON constant_expression;
+
+constant_param_expression
+locals [ Constant_param_expressionContextExt extendedContext ]
+	: constant_mintypmax_expression
+	| data_type
+	| DOLLAR;
+
+param_expression
+locals [ Param_expressionContextExt extendedContext ]
+	: mintypmax_expression
+	| data_type;
+
+constant_range_expression
+locals [ Constant_range_expressionContextExt extendedContext ]
+	: constant_expression
+	| constant_part_select_range;
+
+constant_part_select_range
+locals [ Constant_part_select_rangeContextExt extendedContext ]
+	: constant_range
+	| constant_indexed_range;
+
+constant_range
+locals [ Constant_rangeContextExt extendedContext ]
+	: constant_expression COLON constant_expression;
+
+constant_indexed_range
+locals [ Constant_indexed_rangeContextExt extendedContext ]
+	: constant_expression  PLUSCOLON  constant_expression
+	| constant_expression  MINUSCOLON  constant_expression;
+
+expr_
+locals [ Expr_ContextExt extendedContext ]
+	: expression;
+
+expression
+locals [ ExpressionContextExt extendedContext ]
+	: primary		#expression_only_primary
+	| unary_operator attribute_instance* primary		#expression_unary_op
+	| inc_or_dec_expression		#expression_inc_or_dec
+	| LPAREN operator_assignment RPAREN		#expression_op_assign
+	| expression STARSTAR attribute_instance* expression		#expression_st_st
+	| expression ( STAR | DIV | MODULO ) attribute_instance* expression		#expression_mult
+	| expression ( PLUS | MINUS ) attribute_instance* expression		#expression_add
+	| expression ( LSHIFT | RSHIFT | ALSHIFT | ARSHIFT ) attribute_instance* expression		#expression_shift
+	| <assoc=right> expression ( LT | GT | LE | GE ) attribute_instance* expression		#expression_comp
+	| expression  INSIDESTR  LCURL open_range_list RCURL		#expression_inside_exp
+	| expression ( EQUALS | NOT_EQUALS | CASE_EQUALITY | CASE_INEQUALITY | CASE_Q | NOT_CASE_Q ) attribute_instance* expression		#expression_equality
+	| expression ( AND ) attribute_instance* expression		#expression_binary_and
+	| expression ( XOR | XNOR | XORN ) attribute_instance* expression		#expression_binary_xor
+	| expression ( OR ) attribute_instance* expression		#expression_binary_or
+	| expression ( LOG_AND ) attribute_instance* expression		#expression_log_and
+	| expression ( LOG_OR ) attribute_instance* expression		#expression_log_or
+	| <assoc=right> expression (  QUESTINMARK  attribute_instance* expression COLON expression )		#expression_conditional_exp
+	| tagged_union_expression		#expression_tagged_union;
+
+matches_pattern
+locals [ Matches_patternContextExt extendedContext ]
+	:  MATCHESSTR  pattern;
+
+tagged_union_expression
+locals [ Tagged_union_expressionContextExt extendedContext ]
+	:  TAGGEDSTR  member_identifier expression?;
+
+value_range
+locals [ Value_rangeContextExt extendedContext ]
+	: expression
+	| LBRACK expression COLON expression RBRACK;
+
+mintypmax_expression
+locals [ Mintypmax_expressionContextExt extendedContext ]
+	: expression
+	| expression COLON expression COLON expression;
+
+module_path_expression
+locals [ Module_path_expressionContextExt extendedContext ]
+	: module_path_conditional_expression;
+
+module_path_conditional_expression
+locals [ Module_path_conditional_expressionContextExt extendedContext ]
+	: module_path_binary_expression (  QUESTINMARK  attribute_instance? module_path_expression COLON module_path_expression )?;
+
+module_path_binary_expression
+locals [ Module_path_binary_expressionContextExt extendedContext ]
+	: module_path_unary_expression ( binary_module_path_operator attribute_instance? module_path_unary_expression )?;
+
+module_path_unary_expression
+locals [ Module_path_unary_expressionContextExt extendedContext ]
+	: unary_module_path_operator attribute_instance? module_path_primary;
+
+module_path_mintypmax_expression
+locals [ Module_path_mintypmax_expressionContextExt extendedContext ]
+	: module_path_expression
+	| module_path_expression COLON module_path_expression COLON module_path_expression;
+
+part_select_range
+locals [ Part_select_rangeContextExt extendedContext ]
+	: constant_range
+	| indexed_range;
+
+indexed_range
+locals [ Indexed_rangeContextExt extendedContext ]
+	: expression  PLUSCOLON  constant_expression
+	| expression  MINUSCOLON  constant_expression;
+
+genvar_expression
+locals [ Genvar_expressionContextExt extendedContext ]
+	: constant_expression;
+
+constant_primary
+locals [ Constant_primaryContextExt extendedContext ]
+	: primary_literal
+	| ps_parameter_identifier constant_select
+	| specparam_identifier ( LBRACK constant_range_expression RBRACK )?
+	| genvar_identifier
+	| ( package_scope | class_scope )? enum_identifier
+	| constant_concatenation ( LBRACK constant_range_expression RBRACK )?
+	| constant_multiple_concatenation ( LBRACK constant_range_expression RBRACK )?
+	| constant_function_call
+	| constant_let_expression
+	| LPAREN constant_mintypmax_expression RPAREN
+	| constant_cast
+	| constant_assignment_pattern_expression
+	| type_reference;
+
+module_path_primary
+locals [ Module_path_primaryContextExt extendedContext ]
+	: number
+	| identifier
+	| module_path_concatenation
+	| module_path_multiple_concatenation
+	| function_subroutine_call
+	| LPAREN module_path_mintypmax_expression RPAREN;
+
+primary_no_function_call
+locals [ Primary_no_function_callContextExt extendedContext ]
+	: primary_literal
+	| ( implicit_class_handle DOT | class_scope | package_scope )? hierarchical_identifier select
+	| empty_queue
+	| concatenation ( LBRACK range_expression RBRACK )?
+	| multiple_concatenation ( LBRACK range_expression RBRACK )?
+	| let_expression
+	| LPAREN mintypmax_expression RPAREN
+	| cast
+	| assignment_pattern_expression
+	| streaming_concatenation
+	| sequence_method_call
+	|  THISSTR 
+	| DOLLAR
+	|  NULLSTR ;
+
+primary
+locals [ PrimaryContextExt extendedContext ]
+	: primary_no_function_call
+	| function_subroutine_call;
+
+class_qualifier
+locals [ Class_qualifierContextExt extendedContext ]
+	: (  LOCALCOLONCOLON  )? ( implicit_class_handle DOT | class_scope )?;
+
+range_expression
+locals [ Range_expressionContextExt extendedContext ]
+	: expression
+	| part_select_range;
+
+primary_literal
+locals [ Primary_literalContextExt extendedContext ]
+	: number
+	| time_literal
+	| unbased_unsized_literal
+	| string_literal;
+
+time_literal
+locals [ Time_literalContextExt extendedContext ]
+	: Zero_Or_One TIME_UNIT
+	| EDGE_SPEC TIME_UNIT
+	| Decimal_number TIME_UNIT
+	| Real_number TIME_UNIT;
+
+implicit_class_handle
+locals [ Implicit_class_handleContextExt extendedContext ]
+	:  THISSTR  DOT  SUPERSTR 
+	|  THISSTR 
+	|  SUPERSTR ;
+
+bit_select
+locals [ Bit_selectContextExt extendedContext ]
+	: ( LBRACK expression RBRACK )*;
+
+select
+locals [ SelectContextExt extendedContext ]
+	: ( ( DOT member_identifier bit_select )* DOT member_identifier )? bit_select ( LBRACK part_select_range RBRACK )?;
+
+nonrange_select
+locals [ Nonrange_selectContextExt extendedContext ]
+	: ( ( DOT member_identifier bit_select )* DOT member_identifier )? bit_select;
+
+constant_bit_select
+locals [ Constant_bit_selectContextExt extendedContext ]
+	: ( LBRACK constant_expression RBRACK )*;
+
+constant_select
+locals [ Constant_selectContextExt extendedContext ]
+	: ( ( DOT member_identifier constant_bit_select )* DOT member_identifier )? constant_bit_select ( LBRACK constant_part_select_range RBRACK )*;
+
+constant_cast
+locals [ Constant_castContextExt extendedContext ]
+	: casting_type  ESCAPEQUOTE  LPAREN constant_expression RPAREN;
+
+constant_let_expression
+locals [ Constant_let_expressionContextExt extendedContext ]
+	: let_expression;
+
+cast
+locals [ CastContextExt extendedContext ]
+	: casting_type  ESCAPEQUOTE  LPAREN expression RPAREN;
+
+net_lvalue
+locals [ Net_lvalueContextExt extendedContext ]
+	: ps_or_hierarchical_net_identifier constant_select
+	| LCURL net_lvalue ( COMMA net_lvalue )* RCURL
+	| LBRACK assignment_pattern_expression_type RBRACK assignment_pattern_net_lvalue;
+
+variable_lvalue
+locals [ Variable_lvalueContextExt extendedContext ]
+	: ( implicit_class_handle DOT | package_scope )? hierarchical_variable_identifier select
+	| LCURL variable_lvalue ( COMMA variable_lvalue )* RCURL
+	| ( assignment_pattern_expression_type )? assignment_pattern_variable_lvalue
+	| streaming_concatenation;
+
+nonrange_variable_lvalue
+locals [ Nonrange_variable_lvalueContextExt extendedContext ]
+	: ( implicit_class_handle DOT | package_scope )? hierarchical_variable_identifier nonrange_select;
+
+unary_operator
+locals [ Unary_operatorContextExt extendedContext ]
+	: PLUS
+	| MINUS
+	| NOT
+	| COMPLIMENT
+	| AND
+	| NAND
+	| OR
+	| NOR
+	| XOR
+	| XORN
+	| XNOR;
+
+binary_operator
+locals [ Binary_operatorContextExt extendedContext ]
+	: PLUS
+	| MINUS
+	| STAR
+	| DIV
+	| MODULO
+	| EQUALS
+	| NOT_EQUALS
+	| CASE_EQUALITY
+	| CASE_INEQUALITY
+	| CASE_Q
+	| NOT_CASE_Q
+	| LOG_AND
+	| LOG_OR
+	| STARSTAR
+	| LT
+	| LE
+	| GT
+	| GE
+	| AND
+	| OR
+	| XOR
+	| XNOR
+	| XORN
+	| RSHIFT
+	| LSHIFT
+	| ARSHIFT
+	| ALSHIFT
+	| DERIVE
+	| DDERIVE;
+
+inc_or_dec_operator
+locals [ Inc_or_dec_operatorContextExt extendedContext ]
+	: increment
+	| decrement;
+
+increment 
+locals [ IncrementContextExt extendedContext ] 
+: PLUS PLUS;
+
+decrement 
+locals [ DecrementContextExt extendedContext ]
+: MINUS MINUS;
+
+unary_module_path_operator
+locals [ Unary_module_path_operatorContextExt extendedContext ]
+	: NOT
+	| COMPLIMENT
+	| AND
+	| NAND
+	| OR
+	| NOR
+	| XOR
+	| XNOR
+	| XORN;
+
+binary_module_path_operator
+locals [ Binary_module_path_operatorContextExt extendedContext ]
+	: EQUALS
+	| NOT_EQUALS
+	| LOG_AND
+	| LOG_OR
+	| AND
+	| OR
+	| XOR
+	| XNOR
+	| XORN;
+
+unbased_unsized_literal
+locals [ Unbased_unsized_literalContextExt extendedContext ]
+	:  SCALAR_CONSTANT0 
+	|  SCALAR_CONSTANT1 
+	|  ESCAPEQUOTE  Z_or_X;
+
+string_literal
+locals [ String_literalContextExt extendedContext ]
+	: STRING;
+
+attribute_instance
+locals [ Attribute_instanceContextExt extendedContext ]
+	:  LPARENSTAR  attr_spec ( COMMA attr_spec )*  STARRPAREN ;
+
+attr_spec
+locals [ Attr_specContextExt extendedContext ]
+	: attr_name ( ASSIGN constant_expression )?;
+
+attr_name
+locals [ Attr_nameContextExt extendedContext ]
+	: identifier;
+
+array_identifier
+locals [ Array_identifierContextExt extendedContext ]
+	: identifier;
+
+block_identifier
+locals [ Block_identifierContextExt extendedContext ]
+	: identifier;
+
+bin_identifier
+locals [ Bin_identifierContextExt extendedContext ]
+	: identifier;
+
+c_identifier
+locals [ C_identifierContextExt extendedContext ]
+	: simple_identifier;
+
+cell_identifier
+locals [ Cell_identifierContextExt extendedContext ]
+	: identifier;
+
+checker_identifier
+locals [ Checker_identifierContextExt extendedContext ]
+	: identifier;
+
+class_identifier
+locals [ Class_identifierContextExt extendedContext ]
+	: identifier;
+
+class_variable_identifier
+locals [ Class_variable_identifierContextExt extendedContext ]
+	: variable_identifier;
+
+clocking_identifier
+locals [ Clocking_identifierContextExt extendedContext ]
+	: identifier;
+
+config_identifier
+locals [ Config_identifierContextExt extendedContext ]
+	: identifier;
+
+const_identifier
+locals [ Const_identifierContextExt extendedContext ]
+	: identifier;
+
+constraint_identifier
+locals [ Constraint_identifierContextExt extendedContext ]
+	: identifier;
+
+covergroup_identifier
+locals [ Covergroup_identifierContextExt extendedContext ]
+	: identifier;
+
+covergroup_variable_identifier
+locals [ Covergroup_variable_identifierContextExt extendedContext ]
+	: variable_identifier;
+
+cover_point_identifier
+locals [ Cover_point_identifierContextExt extendedContext ]
+	: identifier;
+
+cross_identifier
+locals [ Cross_identifierContextExt extendedContext ]
+	: identifier;
+
+dynamic_array_variable_identifier
+locals [ Dynamic_array_variable_identifierContextExt extendedContext ]
+	: variable_identifier;
+
+enum_identifier
+locals [ Enum_identifierContextExt extendedContext ]
+	: identifier;
+
+escaped_identifier
+locals [ Escaped_identifierContextExt extendedContext ]
+	: ESCAPED_IDENTIFIER;
+
+formal_identifier
+locals [ Formal_identifierContextExt extendedContext ]
+	: identifier;
+
+function_identifier
+locals [ Function_identifierContextExt extendedContext ]
+	: identifier;
+
+generate_block_identifier
+locals [ Generate_block_identifierContextExt extendedContext ]
+	: identifier;
+
+genvar_identifier
+locals [ Genvar_identifierContextExt extendedContext ]
+	: identifier;
+
+hierarchical_array_identifier
+locals [ Hierarchical_array_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_block_identifier
+locals [ Hierarchical_block_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_event_identifier
+locals [ Hierarchical_event_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_identifier
+locals [ Hierarchical_identifierContextExt extendedContext ]
+	: (  DOLLARROOTSTR  DOT )? ( identifier constant_bit_select DOT )* identifier;
+
+hierarchical_net_identifier
+locals [ Hierarchical_net_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_parameter_identifier
+locals [ Hierarchical_parameter_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_property_identifier
+locals [ Hierarchical_property_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_sequence_identifier
+locals [ Hierarchical_sequence_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_task_identifier
+locals [ Hierarchical_task_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_tf_identifier
+locals [ Hierarchical_tf_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+hierarchical_variable_identifier
+locals [ Hierarchical_variable_identifierContextExt extendedContext ]
+	: hierarchical_identifier;
+
+identifier
+locals [ IdentifierContextExt extendedContext ]
+	: simple_identifier
+	| escaped_identifier;
+
+index_variable_identifier
+locals [ Index_variable_identifierContextExt extendedContext ]
+	: identifier;
+
+interface_identifier
+locals [ Interface_identifierContextExt extendedContext ]
+	: identifier;
+
+interface_instance_identifier
+locals [ Interface_instance_identifierContextExt extendedContext ]
+	: identifier;
+
+inout_port_identifier
+locals [ Inout_port_identifierContextExt extendedContext ]
+	: identifier;
+
+input_port_identifier
+locals [ Input_port_identifierContextExt extendedContext ]
+	: identifier;
+
+instance_identifier
+locals [ Instance_identifierContextExt extendedContext ]
+	: identifier;
+
+library_identifier
+locals [ Library_identifierContextExt extendedContext ]
+	: identifier;
+
+member_identifier
+locals [ Member_identifierContextExt extendedContext ]
+	: identifier;
+
+method_identifier
+locals [ Method_identifierContextExt extendedContext ]
+	: identifier;
+
+modport_identifier
+locals [ Modport_identifierContextExt extendedContext ]
+	: identifier;
+
+module_identifier
+locals [ Module_identifierContextExt extendedContext ]
+	: identifier;
+
+net_identifier
+locals [ Net_identifierContextExt extendedContext ]
+	: identifier;
+
+output_port_identifier
+locals [ Output_port_identifierContextExt extendedContext ]
+	: identifier;
+
+package_identifier
+locals [ Package_identifierContextExt extendedContext ]
+	: identifier;
+
+package_scope
+locals [ Package_scopeContextExt extendedContext ]
+	: package_identifier  COLONCOLON 
+	|  DOLLARUNITSTR   COLONCOLON ;
+
+parameter_identifier
+locals [ Parameter_identifierContextExt extendedContext ]
+	: identifier;
+
+port_identifier
+locals [ Port_identifierContextExt extendedContext ]
+	: identifier;
+
+production_identifier
+locals [ Production_identifierContextExt extendedContext ]
+	: identifier;
+
+program_identifier
+locals [ Program_identifierContextExt extendedContext ]
+	: identifier;
+
+property_identifier
+locals [ Property_identifierContextExt extendedContext ]
+	: identifier;
+
+ps_class_identifier
+locals [ Ps_class_identifierContextExt extendedContext ]
+	: package_scope? class_identifier;
+
+ps_covergroup_identifier
+locals [ Ps_covergroup_identifierContextExt extendedContext ]
+	: package_scope? covergroup_identifier;
+
+ps_identifier
+locals [ Ps_identifierContextExt extendedContext ]
+	: package_scope? identifier;
+
+ps_or_hierarchical_array_identifier
+locals [ Ps_or_hierarchical_array_identifierContextExt extendedContext ]
+	: ps_or_hierarchical_array_identifier_part1* hierarchical_array_identifier;
+
+ps_or_hierarchical_array_identifier_part1
+locals [ Ps_or_hierarchical_array_identifier_part1ContextExt extendedContext ]
+	: implicit_class_handle DOT
+	| class_scope
+	| package_scope;
+
+ps_or_hierarchical_net_identifier
+locals [ Ps_or_hierarchical_net_identifierContextExt extendedContext ]
+	: package_scope? net_identifier
+	| hierarchical_net_identifier;
+
+ps_or_hierarchical_property_identifier
+locals [ Ps_or_hierarchical_property_identifierContextExt extendedContext ]
+	: package_scope? property_identifier
+	| hierarchical_property_identifier;
+
+ps_or_hierarchical_sequence_identifier
+locals [ Ps_or_hierarchical_sequence_identifierContextExt extendedContext ]
+	: package_scope? sequence_identifier
+	| hierarchical_sequence_identifier;
+
+ps_or_hierarchical_tf_identifier
+locals [ Ps_or_hierarchical_tf_identifierContextExt extendedContext ]
+	: package_scope? tf_identifier
+	| hierarchical_tf_identifier;
+
+ps_parameter_identifier
+locals [ Ps_parameter_identifierContextExt extendedContext ]
+	: package_scope? parameter_identifier
+	| ps_parameter_identifier_part1* parameter_identifier;
+
+ps_parameter_identifier_part1
+locals [ Ps_parameter_identifier_part1ContextExt extendedContext ]
+	: generate_block_identifier ( LBRACK constant_expression RBRACK )? DOT;
+
+ps_type_identifier
+locals [ Ps_type_identifierContextExt extendedContext ]
+	: (  LOCALCOLONCOLON  | package_scope )? type_identifier;
+
+sequence_identifier
+locals [ Sequence_identifierContextExt extendedContext ]
+	: identifier;
+
+signal_identifier
+locals [ Signal_identifierContextExt extendedContext ]
+	: identifier;
+
+simple_identifier
+locals [ Simple_identifierContextExt extendedContext ]
+	: ID;
+
+specparam_identifier
+locals [ Specparam_identifierContextExt extendedContext ]
+	: identifier;
+
+system_tf_identifier
+locals [ System_tf_identifierContextExt extendedContext ]
+	: TF_ID;
+
+task_identifier
+locals [ Task_identifierContextExt extendedContext ]
+	: identifier;
+
+tf_identifier
+locals [ Tf_identifierContextExt extendedContext ]
+	: identifier;
+
+terminal_identifier
+locals [ Terminal_identifierContextExt extendedContext ]
+	: identifier;
+
+topmodule_identifier
+locals [ Topmodule_identifierContextExt extendedContext ]
+	: identifier;
+
+type_identifier
+locals [ Type_identifierContextExt extendedContext ]
+	: identifier;
+
+udp_identifier
+locals [ Udp_identifierContextExt extendedContext ]
+	: identifier;
+
+bins_identifier
+locals [ Bins_identifierContextExt extendedContext ]
+	: identifier;
+
+variable_identifier
+locals [ Variable_identifierContextExt extendedContext ]
+	: identifier;
+
+number
+locals [ NumberContextExt extendedContext ]
+	: MINUS? EDGE_SPEC
+	| MINUS? Zero_Or_One
+	| MINUS? Decimal_number
+	| Octal_number
+	| Binary_number
+	| Hex_number
+	| Real_number;
+
+ENDSTR : 'end';
+PRIMITIVESTR : 'primitive';
+CONFIGSTR : 'config';
+DEASSIGNSTR : 'deassign';
+STRINGSTR : 'string';
+DOLLARFULLSKEWSTR : '$fullskew';
+INTEGERSTR : 'integer';
+REALTIMESTR : 'realtime';
+COLONEQUALS : ':=';
+SOLVESTR : 'solve';
+TRANIF0STR : 'tranif0';
+FORKSTR : 'fork';
+THISSTR : 'this';
+WITHSTR : 'with';
+DOLLAEWIDTHSTR : '$width';
+RETURNSTR : 'return';
+REGSTR : 'reg';
+PROTECTEDSTR : 'protected';
+CHECKERSTR : 'checker';
+STRONG0 : 'strong0';
+STATICSTR : 'static';
+DOLLARFATALSTR : '$fatal';
+EXTENDSSTR : 'extends';
+SCALAREDSTR : 'scalared';
+ESCAPEQUOTE : '\'';
+ANDEQUALS : '&=';
+CASEXSTR : 'casex';
+WAIT_ORDERSTR : 'wait_order';
+REFSTR : 'ref';
+BUFSTR : 'buf';
+DEFAULTSTR : 'default';
+LSHIFT_ASSIGN : '<<=';
+ENDTASKSTR : 'endtask';
+REALSTR : 'real';
+ASSERTSTR : 'assert';
+DISTSTR : 'dist';
+TRIANDSTR : 'triand';
+POSEDGESTR : 'posedge';
+OREQUAL : '|=';
+OUTPUTSTR : 'output';
+ENDPROGRAMSTR : 'endprogram';
+EXPECTSTR : 'expect';
+ALWAYS_COMBSTR : 'always_comb';
+ALIASSTR : 'alias';
+EXPORT : 'export';
+BINSOFSTR : 'binsof';
+WITHINSTR : 'within';
+MODULESTR : 'module';
+IFFSTR : 'iff';
+PULLDOWNSTR : 'pulldown';
+SIGNEDSTR : 'signed';
+VIRTUALSTR : 'virtual';
+UNIONSTR : 'union';
+DERIVEGT : '->>';
+ASSIGNSTRSTR : 'assign';
+ENDCASESTR : 'endcase';
+FORKJOINSTR : 'forkjoin';
+CROSSSTR : 'cross';
+NOTIF1STR : 'notif1';
+RPMOSSTR : 'rpmos';
+DOLLARPERIODSTR : '$period';
+TRANIF1STR : 'tranif1';
+CONTINUESTR : 'continue';
+ORSTR : 'or';
+NOTIF0STR : 'notif0';
+ENDCLOCKINGSTR : 'endclocking';
+JOIN_ANYSTR : 'join_any';
+BITSTR : 'bit';
+INSTANCESTR : 'instance';
+ENDCONFIGSTR : 'endconfig';
+SLASHEQUALS : '/=';
+INTERSECTSTR : 'intersect';
+DOLLARNOCHANGESTR : '$nochange';
+RELEASESTR : 'release';
+SHORTINTSTR : 'shortint';
+DESIGNSTR : 'design';
+SPECIFYSTR : 'specify';
+EXTERNSTR : 'extern';
+FUNCTIONSTR : 'function';
+RANDCSTR : 'randc';
+BYTESTR : 'byte';
+IMPORTSTR : 'import';
+STRUCTSTR : 'struct';
+LARGESTR : 'large';
+RCMOSSTR : 'rcmos';
+ELSESTR : 'else';
+ILLEGAL_BINSSTR : 'illegal_bins';
+PLUSEQUALS : '+=';
+LETSTR : 'let';
+BREAKSTR : 'break';
+UNIQUESTR : 'unique';
+UNTYPEDSTR : 'untyped';
+QUESTINMARK : '?';
+RTRANSTR : 'rtran';
+DOLLARRECREMSTR : '$recrem';
+WHILESTR : 'while';
+INPUTSTR : 'input';
+WIRESTR : 'wire';
+DISABLESTR : 'disable';
+FOREACHSTR : 'foreach';
+LOCALCOLONCOLON : 'local::';
+ENDCLASSSTR : 'endclass';
+WEAK0STR : 'weak0';
+BUFIF0STR : 'bufif0';
+TRANSTR : 'tran';
+ORIMPLIES : '|=>';
+NMOSSTR : 'nmos';
+CHANDLESTR : 'chandle';
+HIGHZ0STR : 'highz0';
+BEGINSTR : 'begin';
+DOLLARSKEWSTR : '$skew';
+NULLSTR : 'null';
+ONESTEPSTR : '1step';
+PLUSCOLON : '+:';
+PURESTR : 'pure';
+COVERPOINTSTR : 'coverpoint';
+BINSSTR : 'bins';
+GLOBALSTR : 'global';
+CONSTRAINTSTR : 'constraint';
+STDCOLONCOLON : 'std::';
+ATTHERATE : '@';
+MEDIUMSTR : 'medium';
+AUTOMATICSTR : 'automatic';
+COLONCOLON : '::';
+ALWAYSSTR : 'always';
+PULL0STR : 'pull0';
+PARAMETERSTR : 'parameter';
+GENERATESTR : 'generate';
+INITIALSTR : 'initial';
+USESTR : 'use';
+BUFIF1STR : 'bufif1';
+LOCALPARAMSTR : 'localparam';
+WEAK1STR : 'weak1';
+INOUTSTR : 'inout';
+ATTHERATELPAREN : '@@(';
+BINDSTR : 'bind';
+HIGHZ1STR : 'highz1';
+DOLLARSETUPHOLDSTR : '$setuphold';
+UNIQUE0STR : 'unique0';
+TAGGEDSTR : 'tagged';
+THROUGHOUTSTR : 'throughout';
+CLOCKINGSTR : 'clocking';
+LOCALSTR : 'local';
+ENDTABLESTR : 'endtable';
+DOLLARUNITSTR : '$unit';
+INTERFACESTR : 'interface';
+DEFPARAMSTR : 'defparam';
+PULL1STR : 'pull1';
+TASKSTR : 'task';
+DPI_SPEC_ING1STR : '"DPI"';
+LONGINTSTR : 'longint';
+SPECPARAMSTR : 'specparam';
+SMALLSTR : 'small';
+IFNONESTR : 'ifnone';
+TYPESTR : 'type';
+MODPORTSTR : 'modport';
+EVENTSTR : 'event';
+COVERGROUPSTR : 'covergroup';
+CMOSSTR : 'cmos';
+XNORSTR : 'xnor';
+TYPEDEFSTR : 'typedef';
+FORSTR : 'for';
+STARRPAREN : '*)';
+TRI0STR : 'tri0';
+WANDSTR : 'wand';
+IMPLIES : '=>';
+LPARENSTAR : '(*';
+RANDSEQUENCESTR : 'randsequence';
+DOLLARSETUPSTR : '$setup';
+UWIRESTR : 'uwire';
+ANDSTR : 'and';
+FIRST_MATCHSTR : 'first_match';
+PACKAGESTR : 'package';
+ANDANDAND : '&&&';
+VARSTR : 'var';
+ENDMODULESTR : 'endmodule';
+LPARENSTARRPAREN : '(*)';
+NOTSTR : 'not';
+TRIREGSTR : 'trireg';
+TRI1STR : 'tri1';
+UNSIGNED_LSHIFT_ASSIGN : '<<<=';
+EDGESTR : 'edge';
+ENUMSTR : 'enum';
+JOINSTR : 'join';
+DOLLARERRORSTR : '$error';
+DOLLARINFOSTR : '$info';
+JOIN_NAMESTR : 'join_none';
+NEWSTR : 'new';
+SUPPLY0STR : 'supply0';
+CONSTSTR : 'const';
+DOTSTAR : '.*';
+RANDCASESTR : 'randcase';
+STARTCOLONCOLONSTAR : '*::*';
+DPI_SPEC_ING2STR : '"DPI-C"';
+CELLSTR : 'cell';
+PRIORITYSTR : 'priority';
+XORSTRSTR : 'xor';
+NANDSTR : 'nand';
+SUPERSTR : 'super';
+DOLLARROOTSTR : '$root';
+CASESTR : 'case';
+ALWAYS_FFSTR : 'always_ff';
+ENDPRIMITIVESTR : 'endprimitive';
+DOLLARREMOVALSTR : '$removal';
+ENDGENERATESTR : 'endgenerate';
+SUPPLY1STR : 'supply1';
+LIBLISTSTR : 'liblist';
+DOLLARHOLDSTR : '$hold';
+ATTHERATESTAR : '@*';
+COVERSTR : 'cover';
+DOLLARRECOVERYSTR : '$recovery';
+FORCESTR : 'force';
+PMOS : 'pmos';
+NORSTR : 'nor';
+RANDOMIZESTR : 'randomize';
+ENDGROUPSTR : 'endgroup';
+RNMOSSTR : 'rnmos';
+NOSHOWCANCELLEDSTR : 'noshowcancelled';
+SHOWCANCELLEDSTR : 'showcancelled';
+TIMESTR : 'time';
+PERCENTILEEQUAL : '%=';
+TYPE_OPTIONDOT : 'type_option.';
+PULSESTYLE_ONEVENTSTR : 'pulsestyle_onevent';
+STRONG1 : 'strong1';
+ESCAPELCURL : '\'{';
+WORSTR : 'wor';
+TRIORSTR : 'trior';
+SCALAR_CONSTANT1 : '\'1';
+DOLLARTIMESKEWSTR : '$timeskew';
+SEQUENCESTR : 'sequence';
+PROPERTYSTR : 'property';
+WILDCARDSTR : 'wildcard';
+ENDPACKAGESTR : 'endpackage';
+FINALSTR : 'final';
+COLONSLASH : ':/';
+XOREQUAL : '^=';
+GENVARSTR : 'genvar';
+WAITSTR : 'wait';
+ENDINTERFACESTR : 'endinterface';
+RSHIFT_ASSIGN : '>>=';
+UNSIGNED_RSHIFT_ASSIGN : '>>>=';
+VOIDSTR : 'void';
+RTRANIF1STR : 'rtranif1';
+INTSTR : 'int';
+PROGRAMSTR : 'program';
+IFSTR : 'if';
+ENDFUNCTIONSTR : 'endfunction';
+STARGT : '*>';
+FOREVERSTR : 'forever';
+MACROMODULESTR : 'macromodule';
+INSIDESTR : 'inside';
+ASSUMESTR : 'assume';
+MINUSEQUALS : '-=';
+CONTEXTSTR : 'context';
+SAMPLESTR : 'sample';
+PATHPULSEDOLLAR : 'PATHPULSE$';
+CLASSSTR : 'class';
+ENDSEQUENCESTR : 'endsequence';
+OPTIONDOT : 'option.';
+RANDSTR : 'rand';
+SHORTREAL : 'shortreal';
+MATCHESSTR : 'matches';
+RESTRICTSTR : 'restrict';
+ENDPROPERTYSTR : 'endproperty';
+TABLESTR : 'table';
+IGNORE_BINSSTR : 'ignore_bins';
+REPEATSTR : 'repeat';
+ENDCHECKERSTR : 'endchecker';
+RTRANIF0STR : 'rtranif0';
+MINUSCOLON : '-:';
+UNSIGNEDSTR : 'unsigned';
+ENDSPECIFYSTR : 'endspecify';
+STARTEQUALS : '*=';
+VECTOREDSTR : 'vectored';
+DOSTR : 'do';
+LOGICSTR : 'logic';
+ALWAYS_LATCHSTR : 'always_latch';
+PULSESTYLE_ONDETECTSTR : 'pulsestyle_ondetect';
+CASEZSTR : 'casez';
+TRISTR : 'tri';
+ORDERIVE : '|->';
+PULLUPSTR : 'pullup';
+BEFORESTR : 'before';
+PACKEDSTR : 'packed';
+DOLLARWARNINGSTR : '$warning';
+NEGEDGESTR : 'negedge';
+SCALAR_CONSTANT0 : '\'0';
